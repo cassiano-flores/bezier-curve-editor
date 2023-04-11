@@ -67,6 +67,9 @@ bool BotaoDown = false;
 double nFrames=0;
 double TempoTotal=0;
 
+enum Modo {SEM_CONTINUIDADE, CONT_POSICAO, CONT_DERIVADA};
+Modo modoAtual = SEM_CONTINUIDADE;
+
 // Variáveis para armazenar as dimensões dos botões
 int buttonWidth = 200;
 int buttonHeight = 50;
@@ -227,8 +230,48 @@ void CarregaModelos()
 // **********************************************************************
 void CriaCurvas()
 {
-    Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
-    nCurvas++;
+    switch (modoAtual) {
+
+        case SEM_CONTINUIDADE:
+            Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+            nCurvas++;
+            break;
+
+        case CONT_POSICAO:
+            if (nCurvas == 0) {
+                // Cria a primeira curva a partir dos dois primeiros pontos clicados
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            } else {
+                // Cria uma nova curva a partir do último ponto da última curva e do novo ponto clicado
+                Ponto p0 = Curvas[nCurvas-1].getPC(2);
+                Curvas[nCurvas] = Bezier(p0, PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            }
+            break;
+
+        case CONT_DERIVADA:
+            if (nCurvas == 0) {
+                // Cria a primeira curva a partir dos dois primeiros pontos clicados
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            } else {
+                // Cria uma nova curva a partir do último ponto da última curva e do novo ponto clicado
+                Ponto p0 = Curvas[nCurvas-1].getPC(2);
+                Ponto p1 = PontosClicados[1];
+                Ponto p2 = PontosClicados[2];
+
+                // Define a posição do ponto 2 da curva anterior como sendo o mesmo que o ponto 1 da nova curva
+                Curvas[nCurvas-1].setPonto(2, p1.x, p1.y);
+
+                // Cria a nova curva
+                Ponto dp0 = Curvas[nCurvas-1].getDerivada(1.0, p0, Curvas[nCurvas-1].getPC(1), p1);
+                Ponto dp1 = Curvas[nCurvas].getDerivada(0.0, p0, p1, p2);
+                Curvas[nCurvas] = Bezier(p1, p1 + (dp0 * (1.0/3.0)), p2 - (dp1 * (1.0/3.0)));
+                nCurvas++;
+            }
+            break;
+    }
 }
 
 // **********************************************************************
@@ -561,24 +604,24 @@ void mouse_icons(int button, int state, int x, int y)
         if (x >= button_x && x <= button_x + buttonWidth &&
             y >= button1_y && y <= button1_y + buttonHeight)
         {
-            // Faz algo ao clicar no botão 1
-            printf("Botao 1 clicado\n");
+            modoAtual = SEM_CONTINUIDADE;
+            printf("Modo sem continuidade selecionado\n");
         }
 
         // Verifica se o clique foi dentro do botão 2
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button2_y && y <= button2_y + buttonHeight)
         {
-            // Faz algo ao clicar no botão 2
-            printf("Botao 2 clicado\n");
+            modoAtual = CONT_POSICAO;
+            printf("Modo com continuidade de posicao selecionado\n");
         }
 
         // Verifica se o clique foi dentro do botão 3
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button3_y && y <= button3_y + buttonHeight)
         {
-            // Faz algo ao clicar no botão 3
-            printf("Botao 3 clicado\n");
+            modoAtual = CONT_DERIVADA;
+            printf("Modo com continuidade de derivada selecionado\n");
         }
     }
 }

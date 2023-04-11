@@ -608,10 +608,10 @@
 1680008773 source:c:\users\cassi\downloads\curvasbezier\temporizador.cpp
 	"Temporizador.h"
 
-1680995619 source:c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\bezier.cpp
+1681230812 source:c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\bezier.cpp
 	"Bezier.h"
 
-1680995447 c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\bezier.h
+1681230840 c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\bezier.h
 	<iostream>
 	<windows.h>
 	<GL/glut.h>
@@ -637,7 +637,7 @@
 	<iostream>
 	<cmath>
 
-1681223484 source:c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\desenhabezier.cpp
+1681231617 source:c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\desenhabezier.cpp
 	<iostream>
 	<cmath>
 	<ctime>
