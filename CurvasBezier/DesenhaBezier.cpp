@@ -67,7 +67,7 @@ bool BotaoDown = false;
 double nFrames=0;
 double TempoTotal=0;
 
-enum Modo {SEM_CONTINUIDADE, CONT_POSICAO, CONT_DERIVADA};
+enum Modo {CONT_DERIVADA, CONT_POSICAO, SEM_CONTINUIDADE};
 Modo modoAtual = SEM_CONTINUIDADE;
 
 // Variáveis para armazenar as dimensões dos botões
@@ -86,6 +86,7 @@ int button3Y = 300;
 
 //Botoes
 string buttonTexts[] = {"Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
+int intModo = 2;
 int n_buttons = sizeof(buttonTexts) / sizeof(buttonTexts[0]);
 
 // **********************************************************************
@@ -513,7 +514,7 @@ void Motion(int x, int y)
 // **********************************************************************
 // função para desenhar o botão na janela
 // **********************************************************************
-void DesenhaBotao(int x, int y, int width, int height, string text) {
+void DesenhaBotao(int x, int y, int width, int height, string text, bool status) {
 
     // Define a cor de fundo do botão (preto)
     glColor3f(0.0f, 0.0f, 0.0f);
@@ -527,7 +528,11 @@ void DesenhaBotao(int x, int y, int width, int height, string text) {
     glEnd();
 
     // desenha o texto do botão
-    glColor3f(1.0, 1.0, 1.0); // define a cor branca para o texto do botão
+    if (status) {
+        glColor3f(1.0, 1.0, 0);
+    } else {
+        glColor3f(1.0, 1.0, 1.0);
+    }
     glRasterPos2f(x + 10, y + 20);
     for (int i = 0; i < text.length(); i++)
     {
@@ -564,7 +569,11 @@ void display_icons() {
 
     // desenha os botões
     for (int i = 0; i < n_buttons; i++) {
-        DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i]);
+        if (i == intModo) {
+            DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
+        } else {
+            DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], false);
+        }
         button_y += buttonHeight + button_spacing; // atualiza a posição y para o próximo botão
     }
 
@@ -605,6 +614,7 @@ void mouse_icons(int button, int state, int x, int y)
             y >= button1_y && y <= button1_y + buttonHeight)
         {
             modoAtual = SEM_CONTINUIDADE;
+            intModo = 2;
             printf("Modo sem continuidade selecionado\n");
         }
 
@@ -613,6 +623,7 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button2_y && y <= button2_y + buttonHeight)
         {
             modoAtual = CONT_POSICAO;
+            intModo = 1;
             printf("Modo com continuidade de posicao selecionado\n");
         }
 
@@ -621,6 +632,7 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button3_y && y <= button3_y + buttonHeight)
         {
             modoAtual = CONT_DERIVADA;
+            intModo = 0;
             printf("Modo com continuidade de derivada selecionado\n");
         }
     }

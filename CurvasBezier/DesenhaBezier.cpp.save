@@ -16,6 +16,7 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
+#include <string>
 
 using namespace std;
 
@@ -66,6 +67,27 @@ bool BotaoDown = false;
 double nFrames=0;
 double TempoTotal=0;
 
+enum Modo {CONT_DERIVADA, SEM_CONTINUIDADE};
+Modo modoAtual = SEM_CONTINUIDADE;
+
+// Vari·veis para armazenar as dimensıes dos botıes
+int buttonWidth = 200;
+int buttonHeight = 50;
+
+// Vari·veis para armazenar as posiÁıes dos botıes
+int button1X = 100;
+int button1Y = 100;
+
+int button2X = 100;
+int button2Y = 200;
+
+int button3X = 100;
+int button3Y = 300;
+
+//Botoes
+string buttonTexts[] = {"Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
+int intModo = 0;
+int n_buttons = sizeof(buttonTexts) / sizeof(buttonTexts[0]);
 
 // **********************************************************************
 // Imprime o texto S na posicao (x,y), com a cor 'cor'
@@ -209,8 +231,48 @@ void CarregaModelos()
 // **********************************************************************
 void CriaCurvas()
 {
-    Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
-    nCurvas++;
+    switch (modoAtual) {
+
+        case SEM_CONTINUIDADE:
+            Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+            nCurvas++;
+            break;
+
+        case CONT_POSICAO:
+            if (nCurvas == 0) {
+                // Cria a primeira curva a partir dos dois primeiros pontos clicados
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            } else {
+                // Cria uma nova curva a partir do ˙ltimo ponto da ˙ltima curva e do novo ponto clicado
+                Ponto p0 = Curvas[nCurvas-1].getPC(2);
+                Curvas[nCurvas] = Bezier(p0, PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            }
+            break;
+
+        case CONT_DERIVADA:
+            if (nCurvas == 0) {
+                // Cria a primeira curva a partir dos dois primeiros pontos clicados
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            } else {
+                // Cria uma nova curva a partir do ˙ltimo ponto da ˙ltima curva e do novo ponto clicado
+                Ponto p0 = Curvas[nCurvas-1].getPC(2);
+                Ponto p1 = PontosClicados[1];
+                Ponto p2 = PontosClicados[2];
+
+                // Define a posiÁ„o do ponto 2 da curva anterior como sendo o mesmo que o ponto 1 da nova curva
+                Curvas[nCurvas-1].setPonto(2, p1.x, p1.y);
+
+                // Cria a nova curva
+                Ponto dp0 = Curvas[nCurvas-1].getDerivada(1.0, p0, Curvas[nCurvas-1].getPC(1), p1);
+                Ponto dp1 = Curvas[nCurvas].getDerivada(0.0, p0, p1, p2);
+                Curvas[nCurvas] = Bezier(p1, p1 + (dp0 * (1.0/3.0)), p2 - (dp1 * (1.0/3.0)));
+                nCurvas++;
+            }
+            break;
+    }
 }
 
 // **********************************************************************
@@ -388,7 +450,7 @@ void arrow_keys ( int a_keys, int x, int y )
 
 // **********************************************************************
 // Converte as coordenadas do ponto P de coordenadas de tela para
-// coordenadas de universo (sistema de referê definido na glOrtho
+// coordenadas de universo (sistema de referencias definidas na glOrtho
 // (ver funcao reshape)
 // Este codigo é baseado em http://hamala.se/forums/viewtopic.php?t=20
 // **********************************************************************
@@ -407,8 +469,9 @@ Ponto ConvertePonto(Ponto P)
     gluUnProject(wx,wy,wz,modelview,projection,viewport,&ox,&oy,&oz);
     return Ponto(ox,oy,oz);
 }
+
 // **********************************************************************
-// Captura o clique do botao esquerdo do mouse sobre a área de
+// Captura o clique do botao esquerdo do mouse sobre a area de
 // desenho
 // **********************************************************************
 void Mouse(int button,int state,int x,int y)
@@ -447,14 +510,75 @@ void Motion(int x, int y)
     PosAtualDoMouse.imprime("Mouse:");
     cout << endl;
 }
+
 // **********************************************************************
-//
+// funÁ„o para desenhar o bot„o na janela
+// **********************************************************************
+void DesenhaBotao(int x, int y, int width, int height, string text, bool status) {
+
+    // Define a cor de fundo do bot„o (preto)
+    glColor3f(0.0f, 0.0f, 0.0f);
+
+    // desenha o quadrado em volta do bot„o
+    glBegin(GL_QUADS);
+    glVertex2f(x, y);
+    glVertex2f(x + buttonWidth, y);
+    glVertex2f(x + buttonWidth, y + buttonHeight);
+    glVertex2f(x, y + buttonHeight);
+    glEnd();
+
+    // desenha o texto do bot„o
+    if (status) {
+        glColor3f(1.0, 1.0, 0);
+    } else {
+        glColor3f(1.0, 1.0, 1.0);
+    }
+    glRasterPos2f(x + 10, y + 20);
+    for (int i = 0; i < text.length(); i++)
+    {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text[i]);
+    }
+}
+
 // **********************************************************************
 // Callbacks da janela de Ìcones
-void display_icons()
-{
-    // CÛdigo para renderizar os Ìcones
-    // ...
+// **********************************************************************
+void display_icons() {
+
+    // Limpa o buffer de cores
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Define a cor de fundo para a janela de Ìcones
+    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+
+    // Define a matriz de projeÁ„o
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, 250, 0, 500);
+
+    // Define a matriz de modelo/vis„o
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // calcula as coordenadas dos botıes
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de Ìcones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de Ìcones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaÁamento entre os botıes
+    int button_x = (window_width - buttonWidth) / 2; // posiÁ„o x do bot„o central
+    int button_y = button_spacing; // posiÁ„o y do primeiro bot„o
+
+    // desenha os botıes
+    for (int i = 0; i < n_buttons; i++) {
+        if (i == intModo) {
+            DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
+        } else {
+            DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], false);
+        }
+        button_y += buttonHeight + button_spacing; // atualiza a posiÁ„o y para o prÛximo bot„o
+    }
+
+    // Troca os buffers de vÌdeo
+    glutSwapBuffers();
 }
 
 void keyboard_icons(unsigned char key, int x, int y)
@@ -469,10 +593,49 @@ void arrow_keys_icons(int key, int x, int y)
     // ...
 }
 
+// **********************************************************************
+// FunÁ„o callback do mouse
+// **********************************************************************
 void mouse_icons(int button, int state, int x, int y)
 {
-    // CÛdigo para lidar com eventos de mouse na janela de Ìcones
-    // ...
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de Ìcones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de Ìcones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaÁamento entre os botıes
+    int button_x = (window_width - buttonWidth) / 2;
+    int button1_y = button_spacing;
+    int button2_y = button1_y + (buttonHeight + button_spacing);
+    int button3_y = button2_y + (buttonHeight + button_spacing);
+
+    // Verifica se o bot„o esquerdo do mouse foi pressionado
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    {
+        // Verifica se o clique foi dentro do bot„o 1
+        if (x >= button_x && x <= button_x + buttonWidth &&
+            y >= button1_y && y <= button1_y + buttonHeight)
+        {
+            modoAtual = SEM_CONTINUIDADE;
+            intModo = 0;
+            printf("Modo sem continuidade selecionado\n");
+        }
+
+        // Verifica se o clique foi dentro do bot„o 2
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button2_y && y <= button2_y + buttonHeight)
+        {
+            modoAtual = CONT_POSICAO;
+            intModo = 1;
+            printf("Modo com continuidade de posicao selecionado\n");
+        }
+
+        // Verifica se o clique foi dentro do bot„o 3
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button3_y && y <= button3_y + buttonHeight)
+        {
+            modoAtual = CONT_DERIVADA;
+            intModo = 2;
+            printf("Modo com continuidade de derivada selecionado\n");
+        }
+    }
 }
 
 void motion_icons(int x, int y)
@@ -480,11 +643,12 @@ void motion_icons(int x, int y)
     // CÛdigo para lidar com eventos de movimento do mouse na janela de Ìcones
     // ...
 }
+
 // **********************************************************************
 //  void main ( int argc, char** argv )
 //
 // **********************************************************************
-int  main ( int argc, char** argv )
+int main ( int argc, char** argv )
 {
     cout << "Programa OpenGL" << endl;
 
@@ -533,7 +697,7 @@ int  main ( int argc, char** argv )
     glutMouseFunc(Mouse);
     glutMotionFunc(Motion);
 
-    // Cria a janela de Ìcones
+    // Cria a janela de icones
     glutInitWindowPosition(glutGet(GLUT_WINDOW_X) + glutGet(GLUT_WINDOW_WIDTH), 0);
     glutInitWindowSize(250, 500);
     glutCreateWindow("Icones");

@@ -697,3 +697,57 @@
 1680008773 c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\ponto.cpp
 	"Ponto.h"
 
+1681245571 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.cpp
+	"Bezier.h"
+
+1681245571 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.h
+	<iostream>
+	<windows.h>
+	<GL/glut.h>
+	<GLUT/glut.h>
+	<glut.h>
+	"Ponto.h"
+
+1681245571 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\ponto.h
+	<iostream>
+	<cmath>
+
+1681245571 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\listadecoresrgb.cpp
+	"ListaDeCoresRGB.h"
+
+1681245571 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\listadecoresrgb.h
+	<iostream>
+	<cmath>
+	<ctime>
+	<fstream>
+	<windows.h>
+	<GL/glut.h>
+	<sys/time.h>
+	<GLUT/glut.h>
+	<glut.h>
+
+1681245571 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\poligono.cpp
+	<iostream>
+	<fstream>
+	"Poligono.h"
+
+1681245571 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\poligono.h
+	<iostream>
+	<windows.h>
+	<GL/glut.h>
+	<GLUT/glut.h>
+	<glut.h>
+	"Ponto.h"
+	<vector>
+
+1681245571 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\ponto.cpp
+	"Ponto.h"
+
+1681245571 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\temporizador.cpp
+	"Temporizador.h"
+
+1681245571 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\temporizador.h
+	<iostream>
+	<windows.h>
+	<sys/time.h>
+
