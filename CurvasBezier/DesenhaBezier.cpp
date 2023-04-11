@@ -16,6 +16,7 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
+#include <string>
 
 using namespace std;
 
@@ -66,6 +67,23 @@ bool BotaoDown = false;
 double nFrames=0;
 double TempoTotal=0;
 
+// Variáveis para armazenar as dimensões dos botões
+int buttonWidth = 200;
+int buttonHeight = 50;
+
+// Variáveis para armazenar as posições dos botões
+int button1X = 100;
+int button1Y = 100;
+
+int button2X = 100;
+int button2Y = 200;
+
+int button3X = 100;
+int button3Y = 300;
+
+//Botoes
+string buttonTexts[] = {"Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
+int n_buttons = sizeof(buttonTexts) / sizeof(buttonTexts[0]);
 
 // **********************************************************************
 // Imprime o texto S na posicao (x,y), com a cor 'cor'
@@ -450,13 +468,65 @@ void Motion(int x, int y)
 }
 
 // **********************************************************************
-//
+// função para desenhar o botão na janela
+// **********************************************************************
+void DesenhaBotao(int x, int y, int width, int height, string text) {
+
+    // Define a cor de fundo do botão (preto)
+    glColor3f(0.0f, 0.0f, 0.0f);
+
+    // desenha o quadrado em volta do botão
+    glBegin(GL_QUADS);
+    glVertex2f(x, y);
+    glVertex2f(x + buttonWidth, y);
+    glVertex2f(x + buttonWidth, y + buttonHeight);
+    glVertex2f(x, y + buttonHeight);
+    glEnd();
+
+    // desenha o texto do botão
+    glColor3f(1.0, 1.0, 1.0); // define a cor branca para o texto do botão
+    glRasterPos2f(x + 10, y + 20);
+    for (int i = 0; i < text.length(); i++)
+    {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text[i]);
+    }
+}
+
 // **********************************************************************
 // Callbacks da janela de ícones
-void display_icons()
-{
-    // Código para renderizar os ícones
-    // ...
+// **********************************************************************
+void display_icons() {
+
+    // Limpa o buffer de cores
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Define a cor de fundo para a janela de ícones
+    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+
+    // Define a matriz de projeção
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, 250, 0, 500);
+
+    // Define a matriz de modelo/visão
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // calcula as coordenadas dos botões
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de ícones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de ícones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaçamento entre os botões
+    int button_x = (window_width - buttonWidth) / 2; // posição x do botão central
+    int button_y = button_spacing; // posição y do primeiro botão
+
+    // desenha os botões
+    for (int i = 0; i < n_buttons; i++) {
+        DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i]);
+        button_y += buttonHeight + button_spacing; // atualiza a posição y para o próximo botão
+    }
+
+    // Troca os buffers de vídeo
+    glutSwapBuffers();
 }
 
 void keyboard_icons(unsigned char key, int x, int y)
@@ -471,10 +541,46 @@ void arrow_keys_icons(int key, int x, int y)
     // ...
 }
 
+// **********************************************************************
+// Função callback do mouse
+// **********************************************************************
 void mouse_icons(int button, int state, int x, int y)
 {
-    // Código para lidar com eventos de mouse na janela de ícones
-    // ...
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de ícones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de ícones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaçamento entre os botões
+    int button_x = (window_width - buttonWidth) / 2;
+    int button1_y = button_spacing;
+    int button2_y = button1_y + (buttonHeight + button_spacing);
+    int button3_y = button2_y + (buttonHeight + button_spacing);
+
+    // Verifica se o botão esquerdo do mouse foi pressionado
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    {
+        // Verifica se o clique foi dentro do botão 1
+        if (x >= button_x && x <= button_x + buttonWidth &&
+            y >= button1_y && y <= button1_y + buttonHeight)
+        {
+            // Faz algo ao clicar no botão 1
+            printf("Botao 1 clicado\n");
+        }
+
+        // Verifica se o clique foi dentro do botão 2
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button2_y && y <= button2_y + buttonHeight)
+        {
+            // Faz algo ao clicar no botão 2
+            printf("Botao 2 clicado\n");
+        }
+
+        // Verifica se o clique foi dentro do botão 3
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button3_y && y <= button3_y + buttonHeight)
+        {
+            // Faz algo ao clicar no botão 3
+            printf("Botao 3 clicado\n");
+        }
+    }
 }
 
 void motion_icons(int x, int y)
@@ -487,7 +593,7 @@ void motion_icons(int x, int y)
 //  void main ( int argc, char** argv )
 //
 // **********************************************************************
-int  main ( int argc, char** argv )
+int main ( int argc, char** argv )
 {
     cout << "Programa OpenGL" << endl;
 

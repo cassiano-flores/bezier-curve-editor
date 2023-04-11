@@ -637,11 +637,12 @@
 	<iostream>
 	<cmath>
 
-1681092539 source:c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\desenhabezier.cpp
+1681223484 source:c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\desenhabezier.cpp
 	<iostream>
 	<cmath>
 	<ctime>
 	<fstream>
+	<string>
 	<windows.h>
 	<GL/glut.h>
 	<sys/time.h>
