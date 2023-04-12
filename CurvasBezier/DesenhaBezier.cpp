@@ -67,7 +67,7 @@ bool BotaoDown = false;
 double nFrames=0;
 double TempoTotal=0;
 
-enum Modo {CONT_DERIVADA, CONT_POSICAO, SEM_CONTINUIDADE};
+enum Modo {REMOVER_CURVA, CONT_DERIVADA, CONT_POSICAO, SEM_CONTINUIDADE};
 Modo modoAtual = SEM_CONTINUIDADE;
 
 // Variáveis para armazenar as dimensões dos botões
@@ -85,8 +85,8 @@ int button3X = 100;
 int button3Y = 300;
 
 //Botoes
-string buttonTexts[] = {"Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
-int intModo = 2;
+string buttonTexts[] = {"Remover curva", "Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
+int intModo = 3;
 int n_buttons = sizeof(buttonTexts) / sizeof(buttonTexts[0]);
 
 // **********************************************************************
@@ -269,6 +269,39 @@ void CriaCurvas()
                 nCurvas++;
             }
             break;
+
+        case REMOVER_CURVA:
+            // Percorre todas as curvas existentes para verificar se a aresta clicada pertence a alguma delas
+            for (int i = 0; i < nCurvas; i++) {
+                Bezier curvaAtual = Curvas[i];
+
+                // Percorre todas as arestas da curva para verificar se a aresta clicada pertence a ela
+                for (int j = 0; j < 3; j++) {
+                    if (j < 2)
+                    {
+                        if (estaSobreAresta(curvaAtual.getPC(j), curvaAtual.getPC(j+1), PontosClicados[0]))
+                        {
+                            // Remove a curva e seus pontos de controle do vetor de Curvas
+                            for (int k = i; k < nCurvas-1; k++) {
+                                Curvas[k] = Curvas[k+1];
+                            }
+                            nCurvas--;
+                            break;
+                        }
+                    } else {
+                        if (estaSobreAresta(curvaAtual.getPC(j), curvaAtual.getPC(0), PontosClicados[0]))
+                        {
+                            // Remove a curva e seus pontos de controle do vetor de Curvas
+                            for (int k = i; k < nCurvas-1; k++) {
+                                Curvas[k] = Curvas[k+1];
+                            }
+                            nCurvas--;
+                            break;
+                        }
+                    }
+                }
+            }
+            break;
     }
 }
 
@@ -361,43 +394,43 @@ void display( void )
 
     // Desenha a linha se necessário
     Bezier CurvaProj;
-    if ((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1))
+    if ((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1) && (modoAtual != REMOVER_CURVA))
     {
         switch (nPontoAtual) {
 
-        case 0:
-            break;
+            case 0:
+                break;
 
-        case 1:
-            DesenhaLinha(PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-            break;
+            case 1:
+                DesenhaLinha(PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                break;
 
-        case 2:
-            CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-            defineCor(Red);
-            CurvaProj.Traca();
-            defineCor(Red);
-            CurvaProj.TracaPoligonoDeControle();
-            break;
+            case 2:
+                CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                defineCor(Red);
+                CurvaProj.Traca();
+                defineCor(Red);
+                CurvaProj.TracaPoligonoDeControle();
+                break;
         }
-    } else {
+    } else if (modoAtual != REMOVER_CURVA) {
         switch (nPontoAtual) {
 
-        case 0:
-            defineCor(Red);
-            DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
-            break;
+            case 0:
+                defineCor(Red);
+                DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
+                break;
 
-        case 1:
-            CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-            defineCor(Red);
-            CurvaProj.Traca();
-            defineCor(Red);
-            CurvaProj.TracaPoligonoDeControle();
-            break;
+            case 1:
+                CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                defineCor(Red);
+                CurvaProj.Traca();
+                defineCor(Red);
+                CurvaProj.TracaPoligonoDeControle();
+                break;
 
-        case 2:
-            break;
+            case 2:
+                break;
         }
     }
 
@@ -542,9 +575,19 @@ void Mouse(int button,int state,int x,int y)
             nPontoAtual = 0;
             CriaCurvas();
         }
-    } else
+    }
+    else if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA))
     {
         if (nPontoAtual==2)
+        {
+            nPontoAtual = 0;
+            CriaCurvas();
+        }
+    }
+
+    else if (modoAtual == REMOVER_CURVA)
+    {
+        if (nPontoAtual==1)
         {
             nPontoAtual = 0;
             CriaCurvas();
@@ -669,6 +712,7 @@ void mouse_icons(int button, int state, int x, int y)
     int button1_y = button_spacing;
     int button2_y = button1_y + (buttonHeight + button_spacing);
     int button3_y = button2_y + (buttonHeight + button_spacing);
+    int button4_y = button3_y + (buttonHeight + button_spacing);
 
     // Verifica se o botão esquerdo do mouse foi pressionado
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
@@ -678,7 +722,7 @@ void mouse_icons(int button, int state, int x, int y)
             y >= button1_y && y <= button1_y + buttonHeight)
         {
             modoAtual = SEM_CONTINUIDADE;
-            intModo = 2;
+            intModo = 3;
             printf("Modo sem continuidade selecionado\n");
         }
 
@@ -687,7 +731,7 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button2_y && y <= button2_y + buttonHeight)
         {
             modoAtual = CONT_POSICAO;
-            intModo = 1;
+            intModo = 2;
             printf("Modo com continuidade de posicao selecionado\n");
         }
 
@@ -696,8 +740,16 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button3_y && y <= button3_y + buttonHeight)
         {
             modoAtual = CONT_DERIVADA;
-            intModo = 0;
+            intModo = 1;
             printf("Modo com continuidade de derivada selecionado\n");
+        }
+
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button4_y && y <= button4_y + buttonHeight)
+        {
+            modoAtual = REMOVER_CURVA;
+            intModo = 0;
+            printf("Modo remocao de curvas selecionado\n");
         }
     }
 }

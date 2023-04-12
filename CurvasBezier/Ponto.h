@@ -47,6 +47,7 @@ double ProdEscalar(Ponto v1, Ponto v2);
 void ProdVetorial (Ponto v1, Ponto v2, Ponto &vresult);
 int intersec2d(Ponto k, Ponto l, Ponto m, Ponto n, double &s, double &t);
 bool HaInterseccao(Ponto k, Ponto l, Ponto m, Ponto n);
+bool estaSobreAresta(Ponto P1, Ponto P2, Ponto p3);
 
 long int getContadorInt();
 void resetContadorInt();

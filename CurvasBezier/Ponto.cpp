@@ -260,3 +260,21 @@ int lado(Ponto P1, Ponto P2, Ponto A)
         return DIREITA;
     return SOBRE;
 }
+
+// **********************************************************************
+// verifica ponto sobre aresta
+// **********************************************************************
+bool estaSobreAresta(Ponto p1, Ponto p2, Ponto p3)
+{
+    // Calcula a distância entre os pontos p1 e p2
+    float distP1P2 = calculaDistancia(p1, p2);
+
+    // Calcula a distância entre os pontos p1 e p3
+    float distP1P3 = calculaDistancia(p1, p3);
+
+    // Calcula a distância entre os pontos p2 e p3
+    float distP2P3 = calculaDistancia(p2, p3);
+
+    // Verifica se a distância entre os pontos p1 e p3 mais a distância entre os pontos p2 e p3 é igual à distância entre os pontos p1 e p2
+    return abs(distP1P3 + distP2P3 - distP1P2) <= 0.01;
+}
