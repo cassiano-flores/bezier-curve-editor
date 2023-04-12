@@ -121,9 +121,3 @@ Ponto Bezier::getDerivada(double t, Ponto p0, Ponto p1, Ponto p2)
     double y = (p1.y - p0.y) * 2.0 * t1 + (p2.y - p1.y) * 2.0 * t;
     return Ponto(x, y);
 }
-
-void Bezier::setPonto(int i, double x, double y)
-{
-    Coords[i].x = x;
-    Coords[i].y = y;
-}

@@ -239,36 +239,33 @@ void CriaCurvas()
             break;
 
         case CONT_POSICAO:
-            if (nCurvas == 0) {
+            if (nCurvas == 1) {
                 // Cria a primeira curva a partir dos dois primeiros pontos clicados
                 Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
                 nCurvas++;
             } else {
                 // Cria uma nova curva a partir do último ponto da última curva e do novo ponto clicado
                 Ponto p0 = Curvas[nCurvas-1].getPC(2);
-                Curvas[nCurvas] = Bezier(p0, PontosClicados[1], PontosClicados[2]);
+                Curvas[nCurvas] = Bezier(p0, PontosClicados[0], PontosClicados[1]);
                 nCurvas++;
             }
             break;
 
         case CONT_DERIVADA:
-            if (nCurvas == 0) {
+            if (nCurvas == 1) {
                 // Cria a primeira curva a partir dos dois primeiros pontos clicados
                 Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
                 nCurvas++;
             } else {
                 // Cria uma nova curva a partir do último ponto da última curva e do novo ponto clicado
                 Ponto p0 = Curvas[nCurvas-1].getPC(2);
-                Ponto p1 = PontosClicados[1];
-                Ponto p2 = PontosClicados[2];
+                Ponto p1 = PontosClicados[0];
+                Ponto p2 = PontosClicados[1];
 
-                // Define a posição do ponto 2 da curva anterior como sendo o mesmo que o ponto 1 da nova curva
-                Curvas[nCurvas-1].setPonto(2, p1.x, p1.y);
-
-                // Cria a nova curva
-                Ponto dp0 = Curvas[nCurvas-1].getDerivada(1.0, p0, Curvas[nCurvas-1].getPC(1), p1);
+                // Cria as derivadas e a nova curva
+                Ponto dp0 = Curvas[nCurvas-1].getDerivada(1.0, p0, Curvas[nCurvas-1].getPC(1), p0);
                 Ponto dp1 = Curvas[nCurvas].getDerivada(0.0, p0, p1, p2);
-                Curvas[nCurvas] = Bezier(p1, p1 + (dp0 * (1.0/3.0)), p2 - (dp1 * (1.0/3.0)));
+                Curvas[nCurvas] = Bezier(p0, p1 + (dp0 * (1.0/3.0)), p2 - (dp1 * (1.0/3.0)));
                 nCurvas++;
             }
             break;
@@ -357,6 +354,52 @@ void display( void )
     // Define os limites lógicos da área OpenGL dentro da Janela
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	// Coloque aqui as chamadas das rotinas que desenham os objetos
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    // Desenha a linha se necessário
+    Bezier CurvaProj;
+    if ((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1))
+    {
+        switch (nPontoAtual) {
+
+        case 0:
+            break;
+
+        case 1:
+            DesenhaLinha(PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+            break;
+
+        case 2:
+            CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+            defineCor(Red);
+            CurvaProj.Traca();
+            defineCor(Red);
+            CurvaProj.TracaPoligonoDeControle();
+            break;
+        }
+    } else {
+        switch (nPontoAtual) {
+
+        case 0:
+            defineCor(Red);
+            DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
+            break;
+
+        case 1:
+            CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+            defineCor(Red);
+            CurvaProj.Traca();
+            defineCor(Red);
+            CurvaProj.TracaPoligonoDeControle();
+            break;
+
+        case 2:
+            break;
+        }
+    }
 
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenham os objetos
@@ -492,11 +535,32 @@ void Mouse(int button,int state,int x,int y)
      return;
 
     PontosClicados[nPontoAtual++] = ConvertePonto(Ponto(x,y,0));
-    if (nPontoAtual==3)
+    if ((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1))
     {
-        nPontoAtual = 0;
-        CriaCurvas();
+        if (nPontoAtual==3)
+        {
+            nPontoAtual = 0;
+            CriaCurvas();
+        }
+    } else
+    {
+        if (nPontoAtual==2)
+        {
+            nPontoAtual = 0;
+            CriaCurvas();
+        }
     }
+}
+
+// **********************************************************************
+// Sempre captura as coordenadas do mouse sobre a area de desenho
+// **********************************************************************
+void PassiveMotion(int x, int y)
+{
+    Ponto P(x,y);
+    PosAtualDoMouse = ConvertePonto(P);
+
+    glutPostRedisplay();
 }
 
 // **********************************************************************
@@ -695,6 +759,7 @@ int main ( int argc, char** argv )
     // pressionar uma tecla especial
     glutSpecialFunc ( arrow_keys );
     glutMouseFunc(Mouse);
+    glutPassiveMotionFunc(PassiveMotion);
     glutMotionFunc(Motion);
 
     // Cria a janela de icones
