@@ -68,26 +68,19 @@ bool ExibicaoDesenho = true;
 double nFrames=0;
 double TempoTotal=0;
 
-enum Modo {REMOVER_CURVA, CONT_DERIVADA, CONT_POSICAO, SEM_CONTINUIDADE};
+enum Modo {ATUALIZACAO_CONTINUIDADE, CONEXAO_CURVA, MOVIMENTACAO_VERTICES,
+            REMOVER_CURVA, CONT_DERIVADA, CONT_POSICAO, SEM_CONTINUIDADE};
 Modo modoAtual = SEM_CONTINUIDADE;
 
 // Variáveis para armazenar as dimensões dos botões
-int buttonWidth = 200;
+int buttonWidth = 250;
 int buttonHeight = 50;
 
-// Variáveis para armazenar as posições dos botões
-int button1X = 100;
-int button1Y = 100;
-
-int button2X = 100;
-int button2Y = 200;
-
-int button3X = 100;
-int button3Y = 300;
-
 //Botoes
-string buttonTexts[] = {"Exibicao desenhos", "Remover curva", "Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
-int intModo = 4;
+string buttonTexts[] = {"Exibicao desenhos", "Atualizacao continuidade", "Conexao curva existente",
+                        "Movimentacao de vertices", "Remover curva", "Continuidade derivada",
+                        "Continuidade posicao", "Sem continuidade"};
+int intModo = 7;
 int n_buttons = sizeof(buttonTexts) / sizeof(buttonTexts[0]);
 
 // **********************************************************************
@@ -659,7 +652,7 @@ void display_icons() {
     // Define a matriz de projeção
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0, 250, 0, 500);
+    gluOrtho2D(0, 300, 0, 500);
 
     // Define a matriz de modelo/visão
     glMatrixMode(GL_MODELVIEW);
@@ -678,6 +671,10 @@ void display_icons() {
             DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
         } else {
             DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], false);
+        }
+
+        if ((i == 0) && (ExibicaoDesenho)) {
+            DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
         }
         button_y += buttonHeight + button_spacing; // atualiza a posição y para o próximo botão
     }
@@ -712,6 +709,9 @@ void mouse_icons(int button, int state, int x, int y)
     int button3_y = button2_y + (buttonHeight + button_spacing);
     int button4_y = button3_y + (buttonHeight + button_spacing);
     int button5_y = button4_y + (buttonHeight + button_spacing);
+    int button6_y = button5_y + (buttonHeight + button_spacing);
+    int button7_y = button6_y + (buttonHeight + button_spacing);
+    int button8_y = button7_y + (buttonHeight + button_spacing);
 
     // Verifica se o botão esquerdo do mouse foi pressionado
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
@@ -721,7 +721,7 @@ void mouse_icons(int button, int state, int x, int y)
             y >= button1_y && y <= button1_y + buttonHeight)
         {
             modoAtual = SEM_CONTINUIDADE;
-            intModo = 4;
+            intModo = 7;
             printf("Modo sem continuidade selecionado\n");
         }
 
@@ -730,7 +730,7 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button2_y && y <= button2_y + buttonHeight)
         {
             modoAtual = CONT_POSICAO;
-            intModo = 3;
+            intModo = 6;
             printf("Modo com continuidade de posicao selecionado\n");
         }
 
@@ -739,7 +739,7 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button3_y && y <= button3_y + buttonHeight)
         {
             modoAtual = CONT_DERIVADA;
-            intModo = 2;
+            intModo = 5;
             printf("Modo com continuidade de derivada selecionado\n");
         }
 
@@ -747,20 +747,44 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button4_y && y <= button4_y + buttonHeight)
         {
             modoAtual = REMOVER_CURVA;
-            intModo = 1;
-            printf("Modo remocao de curvas selecionado\n");
+            intModo = 4;
+            printf("Edicao remocao de curvas selecionado\n");
         }
 
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button5_y && y <= button5_y + buttonHeight)
         {
+            modoAtual = MOVIMENTACAO_VERTICES;
+            intModo = 3;
+            printf("Edicao movimentacao de vertices selecionado\n");
+        }
+
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button6_y && y <= button6_y + buttonHeight)
+        {
+            modoAtual = CONEXAO_CURVA;
+            intModo = 2;
+            printf("Edicao conexao com uma curva ja existente selecionado\n");
+        }
+
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button7_y && y <= button7_y + buttonHeight)
+        {
+            modoAtual = ATUALIZACAO_CONTINUIDADE;
+            intModo = 1;
+            printf("Edicao atualizacao do modo de continuidade entre duas curvas selecionado\n");
+        }
+
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button8_y && y <= button8_y + buttonHeight)
+        {
             if (ExibicaoDesenho)
             {
                 ExibicaoDesenho = false;
-                printf("Modo exibicao das curvas e poligonos de controle desativado\n");
+                printf("Exibicao das curvas e poligonos de controle desativado\n");
             } else {
                 ExibicaoDesenho = true;
-                printf("Modo exibicao das curvas e poligonos de controle ativado\n");
+                printf("Exibicao das curvas e poligonos de controle ativado\n");
             }
         }
     }
@@ -828,7 +852,7 @@ int main ( int argc, char** argv )
 
     // Cria a janela de icones
     glutInitWindowPosition(glutGet(GLUT_WINDOW_X) + glutGet(GLUT_WINDOW_WIDTH), 0);
-    glutInitWindowSize(250, 500);
+    glutInitWindowSize(300, 500);
     glutCreateWindow("Icones");
 
     // Registra as funções de callback para a janela de ícones
