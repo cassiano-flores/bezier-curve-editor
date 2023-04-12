@@ -63,6 +63,7 @@ float angulo=0.0;
 
 Ponto PosAtualDoMouse;
 bool BotaoDown = false;
+bool ExibicaoDesenho = true;
 
 double nFrames=0;
 double TempoTotal=0;
@@ -85,8 +86,8 @@ int button3X = 100;
 int button3Y = 300;
 
 //Botoes
-string buttonTexts[] = {"Remover curva", "Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
-int intModo = 3;
+string buttonTexts[] = {"Exibicao desenhos", "Remover curva", "Continuidade derivada", "Continuidade posicao", "Sem continuidade"};
+int intModo = 4;
 int n_buttons = sizeof(buttonTexts) / sizeof(buttonTexts[0]);
 
 // **********************************************************************
@@ -327,6 +328,7 @@ void init()
 // **********************************************************************
 void DesenhaLinha(Ponto P1, Ponto P2)
 {
+    defineCor(Brown);
     glBegin(GL_LINES);
         glVertex2f(P1.x,P1.y);
         glVertex2f(P2.x,P2.y);
@@ -352,7 +354,7 @@ void DesenhaCurvas()
 // **********************************************************************
 void DesenhaPontos()
 {
-    defineCor(Red);
+    defineCor(Orange);
     glPointSize(4);
     glBegin(GL_POINTS);
     for(int i=0; i<nPontoAtual;i++)
@@ -388,55 +390,46 @@ void display( void )
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// Coloque aqui as chamadas das rotinas que desenham os objetos
-	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
     // Desenha a linha se necessário
     Bezier CurvaProj;
-    if ((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1) && (modoAtual != REMOVER_CURVA))
-    {
-        switch (nPontoAtual) {
+    if (ExibicaoDesenho) {
+        if (((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1)) && (modoAtual != REMOVER_CURVA))
+        {
+            switch (nPontoAtual) {
 
-            case 0:
-                break;
+                case 0:
+                    break;
 
-            case 1:
-                DesenhaLinha(PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-                break;
+                case 1:
+                    DesenhaLinha(PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                    break;
 
-            case 2:
-                CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-                defineCor(Red);
-                CurvaProj.Traca();
-                defineCor(Red);
-                CurvaProj.TracaPoligonoDeControle();
-                break;
-        }
-    } else if (modoAtual != REMOVER_CURVA) {
-        switch (nPontoAtual) {
+                case 2:
+                    CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                    defineCor(Red);
+                    CurvaProj.Traca();
+                    defineCor(Red);
+                    CurvaProj.TracaPoligonoDeControle();
+                    break;
+            }
+        } else if (modoAtual != REMOVER_CURVA) {
+            switch (nPontoAtual) {
 
-            case 0:
-                defineCor(Red);
-                DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
-                break;
+                case 0:
+                    DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
+                    break;
 
-            case 1:
-                CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-                defineCor(Red);
-                CurvaProj.Traca();
-                defineCor(Red);
-                CurvaProj.TracaPoligonoDeControle();
-                break;
+                case 1:
+                    CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                    CurvaProj.Traca();
+                    CurvaProj.TracaPoligonoDeControle();
+                    break;
 
-            case 2:
-                break;
+                case 2:
+                    break;
+            }
         }
     }
-
-	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// Coloque aqui as chamadas das rotinas que desenham os objetos
-	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	glLineWidth(1);
 	glColor3f(1,1,1); // R, G, B  [0..1]
@@ -446,8 +439,13 @@ void display( void )
 
     glLineWidth(3);
     glColor3f(1,0,0);
-    DesenhaPontos();
-    DesenhaCurvas();
+
+    if (ExibicaoDesenho)
+    {
+        DesenhaPontos();
+        DesenhaCurvas();
+    }
+
     ImprimeMensagens();
 
 	glutSwapBuffers();
@@ -713,6 +711,7 @@ void mouse_icons(int button, int state, int x, int y)
     int button2_y = button1_y + (buttonHeight + button_spacing);
     int button3_y = button2_y + (buttonHeight + button_spacing);
     int button4_y = button3_y + (buttonHeight + button_spacing);
+    int button5_y = button4_y + (buttonHeight + button_spacing);
 
     // Verifica se o botão esquerdo do mouse foi pressionado
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
@@ -722,7 +721,7 @@ void mouse_icons(int button, int state, int x, int y)
             y >= button1_y && y <= button1_y + buttonHeight)
         {
             modoAtual = SEM_CONTINUIDADE;
-            intModo = 3;
+            intModo = 4;
             printf("Modo sem continuidade selecionado\n");
         }
 
@@ -731,7 +730,7 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button2_y && y <= button2_y + buttonHeight)
         {
             modoAtual = CONT_POSICAO;
-            intModo = 2;
+            intModo = 3;
             printf("Modo com continuidade de posicao selecionado\n");
         }
 
@@ -740,7 +739,7 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button3_y && y <= button3_y + buttonHeight)
         {
             modoAtual = CONT_DERIVADA;
-            intModo = 1;
+            intModo = 2;
             printf("Modo com continuidade de derivada selecionado\n");
         }
 
@@ -748,8 +747,21 @@ void mouse_icons(int button, int state, int x, int y)
                  y >= button4_y && y <= button4_y + buttonHeight)
         {
             modoAtual = REMOVER_CURVA;
-            intModo = 0;
+            intModo = 1;
             printf("Modo remocao de curvas selecionado\n");
+        }
+
+        else if (x >= button_x && x <= button_x + buttonWidth &&
+                 y >= button5_y && y <= button5_y + buttonHeight)
+        {
+            if (ExibicaoDesenho)
+            {
+                ExibicaoDesenho = false;
+                printf("Modo exibicao das curvas e poligonos de controle desativado\n");
+            } else {
+                ExibicaoDesenho = true;
+                printf("Modo exibicao das curvas e poligonos de controle ativado\n");
+            }
         }
     }
 }

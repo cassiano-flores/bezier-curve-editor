@@ -4,6 +4,7 @@
 //
 
 #include "Bezier.h"
+#include "ListaDeCoresRGB.h"
 
 // **********************************************************************
 Bezier::Bezier()
@@ -87,6 +88,7 @@ void Bezier::Traca()
     double DeltaT = 1.0/50;
     Ponto P;
     //cout << "DeltaT: " << DeltaT << endl;
+    defineCor(Yellow);
     glBegin(GL_LINE_STRIP);
 
     while(t<1.0)
@@ -105,6 +107,7 @@ void Bezier::Traca()
 // **********************************************************************
 void Bezier::TracaPoligonoDeControle()
 {
+    defineCor(Brown);
     glBegin(GL_LINE_LOOP);
     for(int i=0;i<3;i++)
         glVertex3f(Coords[i].x,Coords[i].y,Coords[i].z);

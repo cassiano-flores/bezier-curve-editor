@@ -697,8 +697,9 @@
 1680008773 c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\ponto.cpp
 	"Ponto.h"
 
-1681307104 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.cpp
+1681312285 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.cpp
 	"Bezier.h"
+	"ListaDeCoresRGB.h"
 
 1681307113 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.h
 	<iostream>
@@ -740,7 +741,7 @@
 	"Ponto.h"
 	<vector>
 
-1681311058 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\ponto.cpp
+1681311515 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\ponto.cpp
 	"Ponto.h"
 
 1681295823 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\temporizador.cpp
@@ -751,7 +752,7 @@
 	<windows.h>
 	<sys/time.h>
 
-1681306321 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\desenhabezier.cpp
+1681312166 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\desenhabezier.cpp
 	<iostream>
 	<cmath>
 	<ctime>
