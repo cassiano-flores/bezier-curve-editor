@@ -296,6 +296,18 @@ void CriaCurvas()
                 }
             }
             break;
+
+        //case MOVIMENTACAO_VERTICES:
+
+            //break;
+
+        case CONEXAO_CURVA:
+
+            break;
+
+        case ATUALIZACAO_CONTINUIDADE:
+
+            break;
     }
 }
 
@@ -383,7 +395,7 @@ void display( void )
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    // Desenha a linha se necessário
+    // Rubber-band
     Bezier CurvaProj;
     if (ExibicaoDesenho) {
         if (((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1)) && (modoAtual != REMOVER_CURVA))
@@ -567,7 +579,7 @@ void Mouse(int button,int state,int x,int y)
             CriaCurvas();
         }
     }
-    else if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA))
+    else if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA) || (modoAtual == CONEXAO_CURVA))
     {
         if (nPontoAtual==2)
         {
@@ -576,13 +588,19 @@ void Mouse(int button,int state,int x,int y)
         }
     }
 
-    else if (modoAtual == REMOVER_CURVA)
+    else if ((modoAtual == REMOVER_CURVA) || (modoAtual == ATUALIZACAO_CONTINUIDADE))
     {
         if (nPontoAtual==1)
         {
             nPontoAtual = 0;
             CriaCurvas();
         }
+    }
+
+    else if (modoAtual == MOVIMENTACAO_VERTICES)
+    {
+        nPontoAtual = 0;
+        CriaCurvas();
     }
 }
 
@@ -603,6 +621,26 @@ void PassiveMotion(int x, int y)
 // **********************************************************************
 void Motion(int x, int y)
 {
+    if (modoAtual == MOVIMENTACAO_VERTICES)
+    {
+        // Primeira acao eh capturar onde o mouse estava ao clicar
+        Ponto P(x,y);
+        PosAtualDoMouse = ConvertePonto(P);
+
+        // Percorre todas as curvas existentes para verificar se a aresta clicada pertence a alguma delas
+        for (int i = 0; i < nCurvas; i++) {
+            Bezier curvaAtual = Curvas[i];
+
+            // Percorre todos os pontos de controle da curva para verificar qual foi clicado
+            for (int j = 0; j < 3; j++) {
+                if (PosAtualDoMouse == curvaAtual.getPC(j))
+                {
+                    Ponto verticeClicada = curvaAtual.getPC(j);
+                }
+            }
+        }
+    }
+
     Ponto P(x,y);
     PosAtualDoMouse = ConvertePonto(P);
     PosAtualDoMouse.imprime("Mouse:");
