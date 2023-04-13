@@ -47,6 +47,9 @@ public:
     double CalculaT(double distanciaPercorrida);
     void calculaComprimentoDaCurva();
     Ponto getDerivada(double t, Ponto p0, Ponto p1, Ponto p2);
+    void setPC(int i, double x, double y);
 };
+
+bool clicouEmPC(Ponto pontoClicado, Ponto pontoCurva);
 
 #endif

@@ -124,3 +124,22 @@ Ponto Bezier::getDerivada(double t, Ponto p0, Ponto p1, Ponto p2)
     double y = (p1.y - p0.y) * 2.0 * t1 + (p2.y - p1.y) * 2.0 * t;
     return Ponto(x, y);
 }
+// **********************************************************************
+//
+// **********************************************************************
+bool clicouEmPC(Ponto pontoClicado, Ponto pontoCurva) {
+
+    // Calcula a distância entre os pontos pontoClicado e pontoCurva
+    double distP1P2 = calculaDistancia(pontoClicado, pontoCurva);
+
+    // Verifica se a distância entre os pontos é relativamente pequena
+    return abs(distP1P2) <= 1.0;
+}
+// **********************************************************************
+//
+// **********************************************************************
+void Bezier::setPC(int i, double x, double y)
+{
+    Coords[i].x = x;
+    Coords[i].y = y;
+}

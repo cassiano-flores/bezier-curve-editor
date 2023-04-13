@@ -155,6 +155,12 @@ Ponto operator-(Ponto P1)
 {
     return P1 * -1;
 }
+
+bool operator!=(const Ponto& lhs, const Ponto& rhs)
+{
+    return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z;
+}
+
 // **********************************************************************
 //    Calcula o produto escalar entre os vetores V1 e V2
 // **********************************************************************
