@@ -61,7 +61,7 @@ Poligono Mapa, MeiaSeta, Mastro;
 
 float angulo=0.0;
 
-Ponto PosAtualDoMouse;
+Ponto PosAtualDoMouse, posInicialMouse, posFinalMouse;
 bool BotaoDown = false;
 bool ExibicaoDesenho = true;
 
@@ -297,12 +297,20 @@ void CriaCurvas()
             }
             break;
 
-        //case MOVIMENTACAO_VERTICES:
+        case MOVIMENTACAO_VERTICES:
 
-            //break;
+            break;
 
         case CONEXAO_CURVA:
 
+            if (nCurvas == 1) {
+                // Cria a primeira curva a partir dos dois primeiros pontos clicados
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            } else {
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            }
             break;
 
         case ATUALIZACAO_CONTINUIDADE:
@@ -398,7 +406,7 @@ void display( void )
     // Rubber-band
     Bezier CurvaProj;
     if (ExibicaoDesenho) {
-        if (((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1)) && (modoAtual != REMOVER_CURVA))
+        if (((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1)))
         {
             switch (nPontoAtual) {
 
@@ -417,7 +425,9 @@ void display( void )
                     CurvaProj.TracaPoligonoDeControle();
                     break;
             }
-        } else if (modoAtual != REMOVER_CURVA) {
+        }
+
+        else if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA)) {
             switch (nPontoAtual) {
 
                 case 0:
@@ -429,11 +439,43 @@ void display( void )
                     CurvaProj.Traca();
                     CurvaProj.TracaPoligonoDeControle();
                     break;
+            }
+        }
+
+        else if (modoAtual == CONEXAO_CURVA) {
+            switch (nPontoAtual) {
+
+                case 0:
+                    break;
+
+                case 1:
+                    DesenhaLinha(PontosClicados[0], PosAtualDoMouse);
+                    break;
 
                 case 2:
+                    CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                    defineCor(Red);
+                    CurvaProj.Traca();
+                    defineCor(Red);
+                    CurvaProj.TracaPoligonoDeControle();
                     break;
             }
         }
+
+        //else if (modoAtual == ATUALIZACAO_CONTINUIDADE) {
+        //    switch (nPontoAtual) {
+
+        //        case 0:
+        //            DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
+        //            break;
+
+        //        case 1:
+        //            CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+        //            CurvaProj.Traca();
+        //            CurvaProj.TracaPoligonoDeControle();
+        //            break;
+        //    }
+        //}
     }
 
 	glLineWidth(1);
@@ -555,6 +597,90 @@ Ponto ConvertePonto(Ponto P)
 // **********************************************************************
 void Mouse(int button,int state,int x,int y)
 {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        posInicialMouse = posFinalMouse = Ponto(x, glutGet(GLUT_WINDOW_HEIGHT) - y, 0);
+    }
+
+    if (modoAtual == MOVIMENTACAO_VERTICES) {
+        // Botão esquerdo do mouse pressionado
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            Ponto P(x,y);
+            posInicialMouse = ConvertePonto(P);
+
+            // Percorre todas as curvas existentes para verificar se o ponto clicado pertence a alguma delas
+            for (int i = 0; i < nCurvas; i++) {
+                Bezier curvaAtual = Curvas[i];
+
+                // Percorre todos os pontos de controle da curva para verificar qual foi clicado
+                for (int j = 0; j < 3; j++) {
+
+                    if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
+                    {
+                        // Armazena o ponto de controle clicado
+                        posInicialMouse = curvaAtual.getPC(j);
+                    }
+                }
+            }
+        }
+        // Botão esquerdo do mouse liberado
+        else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+            Ponto P(x,y);
+            posFinalMouse = ConvertePonto(P);
+
+            // Atualiza a posição do ponto de controle clicado
+            for (int i = 0; i < nCurvas; i++) {
+                Bezier& curvaAtual = Curvas[i];
+
+                // Percorre todos os pontos de controle da curva para verificar qual foi clicado
+                for (int j = 0; j < 3; j++) {
+                    if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
+                    {
+                        // Atualiza a posição do ponto de controle clicado
+                        curvaAtual.setPC(j, posFinalMouse.x, posFinalMouse.y);
+
+                        // Verifica se a curva anterior também precisa ser atualizada
+                        if (i > 0 && j == 0)
+                        {
+                            Bezier curvaAnterior = Curvas[i-1];
+                            curvaAnterior.setPC(2, posFinalMouse.x, posFinalMouse.y);
+                        }
+
+                        // Verifica se a próxima curva também precisa ser atualizada
+                        if (i < nCurvas-1 && j == 2)
+                        {
+                            Bezier proximaCurva = Curvas[i+1];
+                            proximaCurva.setPC(0, posFinalMouse.x, posFinalMouse.y);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (modoAtual == CONEXAO_CURVA) {
+        // Botão esquerdo do mouse pressionado
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            Ponto P(x,y);
+            posInicialMouse = ConvertePonto(P);
+
+            // Percorre todas as curvas existentes para verificar se o ponto clicado pertence a alguma delas
+            for (int i = 0; i < nCurvas; i++) {
+                Bezier curvaAtual = Curvas[i];
+
+                // Percorre todos os pontos de controle da curva para verificar qual foi clicado
+                for (int j = 0; j < 3; j++) {
+
+                    if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
+                    {
+                        // Armazena o ponto de controle clicado
+                        PontosClicados[0] = curvaAtual.getPC(j);
+                        nPontoAtual++;
+                    }
+                }
+            }
+        }
+    }
+
     //cout << "Mouse..." << endl;
 
     if(state==GLUT_DOWN && button==GLUT_LEFT_BUTTON)
@@ -621,26 +747,6 @@ void PassiveMotion(int x, int y)
 // **********************************************************************
 void Motion(int x, int y)
 {
-    if (modoAtual == MOVIMENTACAO_VERTICES)
-    {
-        // Primeira acao eh capturar onde o mouse estava ao clicar
-        Ponto P(x,y);
-        PosAtualDoMouse = ConvertePonto(P);
-
-        // Percorre todas as curvas existentes para verificar se a aresta clicada pertence a alguma delas
-        for (int i = 0; i < nCurvas; i++) {
-            Bezier curvaAtual = Curvas[i];
-
-            // Percorre todos os pontos de controle da curva para verificar qual foi clicado
-            for (int j = 0; j < 3; j++) {
-                if (PosAtualDoMouse == curvaAtual.getPC(j))
-                {
-                    Ponto verticeClicada = curvaAtual.getPC(j);
-                }
-            }
-        }
-    }
-
     Ponto P(x,y);
     PosAtualDoMouse = ConvertePonto(P);
     PosAtualDoMouse.imprime("Mouse:");
@@ -730,6 +836,12 @@ void keyboard_icons(unsigned char key, int x, int y)
 void arrow_keys_icons(int key, int x, int y)
 {
     // Código para lidar com eventos de teclas especiais na janela de ícones
+    // ...
+}
+
+void motion_icons(int x, int y)
+{
+    // Código para lidar com eventos de movimento do mouse na janela de ícones
     // ...
 }
 
@@ -826,12 +938,6 @@ void mouse_icons(int button, int state, int x, int y)
             }
         }
     }
-}
-
-void motion_icons(int x, int y)
-{
-    // Código para lidar com eventos de movimento do mouse na janela de ícones
-    // ...
 }
 
 // **********************************************************************

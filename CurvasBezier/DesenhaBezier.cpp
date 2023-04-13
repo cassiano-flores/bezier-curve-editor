@@ -302,37 +302,14 @@ void CriaCurvas()
             break;
 
         case CONEXAO_CURVA:
+
             if (nCurvas == 1) {
                 // Cria a primeira curva a partir dos dois primeiros pontos clicados
                 Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
                 nCurvas++;
             } else {
-                if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-                    posInicialMouse = posFinalMouse = Ponto(x, glutGet(GLUT_WINDOW_HEIGHT) - y, 0);
-                }
-
-                if (modoAtual == MOVIMENTACAO_VERTICES) {
-                    // Botão esquerdo do mouse pressionado
-                    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-                        Ponto P(x,y);
-                        posInicialMouse = ConvertePonto(P);
-
-                        // Percorre todas as curvas existentes para verificar se o ponto clicado pertence a alguma delas
-                        for (int i = 0; i < nCurvas; i++) {
-                            Bezier curvaAtual = Curvas[i];
-
-                            // Percorre todos os pontos de controle da curva para verificar qual foi clicado
-                            for (int j = 0; j < 3; j++) {
-
-                                if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
-                                {
-                                    // Armazena o ponto de controle clicado
-                                    PontosClicados[2] = curvaAtual.getPC(j);
-                                }
-                            }
-                        }
-                    }
-                }
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
             }
             break;
 
@@ -472,11 +449,11 @@ void display( void )
                     break;
 
                 case 1:
-                    DesenhaLinha(PontosClicados[2], PosAtualDoMouse);
+                    DesenhaLinha(PontosClicados[0], PosAtualDoMouse);
                     break;
 
                 case 2:
-                    CurvaProj = Bezier(PontosClicados[2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                    CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
                     defineCor(Red);
                     CurvaProj.Traca();
                     defineCor(Red);
@@ -680,6 +657,30 @@ void Mouse(int button,int state,int x,int y)
         }
     }
 
+    if (modoAtual == CONEXAO_CURVA) {
+        // Botão esquerdo do mouse pressionado
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            Ponto P(x,y);
+            posInicialMouse = ConvertePonto(P);
+
+            // Percorre todas as curvas existentes para verificar se o ponto clicado pertence a alguma delas
+            for (int i = 0; i < nCurvas; i++) {
+                Bezier curvaAtual = Curvas[i];
+
+                // Percorre todos os pontos de controle da curva para verificar qual foi clicado
+                for (int j = 0; j < 3; j++) {
+
+                    if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
+                    {
+                        // Armazena o ponto de controle clicado
+                        PontosClicados[0] = curvaAtual.getPC(j);
+                        nPontoAtual++;
+                    }
+                }
+            }
+        }
+    }
+
     //cout << "Mouse..." << endl;
 
     if(state==GLUT_DOWN && button==GLUT_LEFT_BUTTON)
@@ -824,6 +825,24 @@ void display_icons() {
 
     // Troca os buffers de vídeo
     glutSwapBuffers();
+}
+
+void keyboard_icons(unsigned char key, int x, int y)
+{
+    // Código para lidar com eventos de teclado na janela de ícones
+    // ...
+}
+
+void arrow_keys_icons(int key, int x, int y)
+{
+    // Código para lidar com eventos de teclas especiais na janela de ícones
+    // ...
+}
+
+void motion_icons(int x, int y)
+{
+    // Código para lidar com eventos de movimento do mouse na janela de ícones
+    // ...
 }
 
 // **********************************************************************
@@ -982,6 +1001,10 @@ int main ( int argc, char** argv )
 
     // Registra as funções de callback para a janela de ícones
     glutDisplayFunc(display_icons);
+    glutKeyboardFunc(keyboard_icons);
+    glutSpecialFunc(arrow_keys_icons);
+    glutMouseFunc(mouse_icons);
+    glutMotionFunc(motion_icons);
 
     // executa algumas inicializações
     init();
