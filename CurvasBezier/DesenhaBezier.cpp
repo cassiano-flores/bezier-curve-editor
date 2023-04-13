@@ -302,7 +302,38 @@ void CriaCurvas()
             break;
 
         case CONEXAO_CURVA:
+            if (nCurvas == 1) {
+                // Cria a primeira curva a partir dos dois primeiros pontos clicados
+                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
+                nCurvas++;
+            } else {
+                if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+                    posInicialMouse = posFinalMouse = Ponto(x, glutGet(GLUT_WINDOW_HEIGHT) - y, 0);
+                }
 
+                if (modoAtual == MOVIMENTACAO_VERTICES) {
+                    // Botão esquerdo do mouse pressionado
+                    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+                        Ponto P(x,y);
+                        posInicialMouse = ConvertePonto(P);
+
+                        // Percorre todas as curvas existentes para verificar se o ponto clicado pertence a alguma delas
+                        for (int i = 0; i < nCurvas; i++) {
+                            Bezier curvaAtual = Curvas[i];
+
+                            // Percorre todos os pontos de controle da curva para verificar qual foi clicado
+                            for (int j = 0; j < 3; j++) {
+
+                                if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
+                                {
+                                    // Armazena o ponto de controle clicado
+                                    PontosClicados[2] = curvaAtual.getPC(j);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             break;
 
         case ATUALIZACAO_CONTINUIDADE:
@@ -434,24 +465,25 @@ void display( void )
             }
         }
 
-        else if (modoAtual == MOVIMENTACAO_VERTICES) {
+        else if (modoAtual == CONEXAO_CURVA) {
+            switch (nPontoAtual) {
 
+                case 0:
+                    break;
+
+                case 1:
+                    DesenhaLinha(PontosClicados[2], PosAtualDoMouse);
+                    break;
+
+                case 2:
+                    CurvaProj = Bezier(PontosClicados[2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                    defineCor(Red);
+                    CurvaProj.Traca();
+                    defineCor(Red);
+                    CurvaProj.TracaPoligonoDeControle();
+                    break;
+            }
         }
-
-        //else if (modoAtual == CONEXAO_CURVA) {
-        //    switch (nPontoAtual) {
-
-        //        case 0:
-        //            DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
-        //            break;
-
-        //        case 1:
-        //            CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-        //            CurvaProj.Traca();
-        //            CurvaProj.TracaPoligonoDeControle();
-        //            break;
-        //    }
-        //}
 
         //else if (modoAtual == ATUALIZACAO_CONTINUIDADE) {
         //    switch (nPontoAtual) {
@@ -950,10 +982,6 @@ int main ( int argc, char** argv )
 
     // Registra as funções de callback para a janela de ícones
     glutDisplayFunc(display_icons);
-    glutKeyboardFunc(keyboard_icons);
-    glutSpecialFunc(arrow_keys_icons);
-    glutMouseFunc(mouse_icons);
-    glutMotionFunc(motion_icons);
 
     // executa algumas inicializações
     init();
