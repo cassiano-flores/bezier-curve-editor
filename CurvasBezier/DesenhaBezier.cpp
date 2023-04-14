@@ -1,6 +1,6 @@
 // **********************************************************************
-// PUCRS/Escola PolitŽcnica
-// COMPUTA‚ÌO GRçFICA
+// PUCRS/Escola Politï¿½cnica
+// COMPUTAï¿½ï¿½O GRï¿½FICA
 //
 // Programa basico para criar aplicacoes 2D em OpenGL
 //
@@ -65,14 +65,18 @@ Ponto PosAtualDoMouse, posInicialMouse, posFinalMouse;
 bool BotaoDown = false;
 bool ExibicaoDesenho = true;
 
+bool ModoConexaoCurva = false;
+bool ConexaoCurva = false;
+Ponto PontoConexaoCurva;
+
 double nFrames=0;
 double TempoTotal=0;
 
-enum Modo {ATUALIZACAO_CONTINUIDADE, CONEXAO_CURVA, MOVIMENTACAO_VERTICES,
+enum Modo {ATUALIZACAO_CONTINUIDADE, MOVIMENTACAO_VERTICES,
             REMOVER_CURVA, CONT_DERIVADA, CONT_POSICAO, SEM_CONTINUIDADE};
 Modo modoAtual = SEM_CONTINUIDADE;
 
-// Variáveis para armazenar as dimensões dos botões
+// Variï¿½veis para armazenar as dimensï¿½es dos botï¿½es
 int buttonWidth = 250;
 int buttonHeight = 50;
 
@@ -238,10 +242,18 @@ void CriaCurvas()
                 Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
                 nCurvas++;
             } else {
-                // Cria uma nova curva a partir do último ponto da última curva e do novo ponto clicado
-                Ponto p0 = Curvas[nCurvas-1].getPC(2);
-                Curvas[nCurvas] = Bezier(p0, PontosClicados[0], PontosClicados[1]);
-                nCurvas++;
+                if (ConexaoCurva)
+                {
+                    Curvas[nCurvas] = Bezier(PontoConexaoCurva, PontosClicados[0], PontosClicados[1]);
+                    nCurvas++;
+                    ConexaoCurva = false;
+
+                } else {
+                    // Cria uma nova curva a partir do ï¿½ltimo ponto da ï¿½ltima curva e do novo ponto clicado
+                    Ponto p0 = Curvas[nCurvas-1].getPC(2);
+                    Curvas[nCurvas] = Bezier(p0, PontosClicados[0], PontosClicados[1]);
+                    nCurvas++;
+                }
             }
             break;
 
@@ -251,16 +263,30 @@ void CriaCurvas()
                 Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
                 nCurvas++;
             } else {
-                // Cria uma nova curva a partir do último ponto da última curva e do novo ponto clicado
-                Ponto p0 = Curvas[nCurvas-1].getPC(2);
-                Ponto p1 = PontosClicados[0];
-                Ponto p2 = PontosClicados[1];
+                if (ConexaoCurva)
+                {
+                    Ponto p0 = PontoConexaoCurva;
+                    Ponto p1 = PontosClicados[0];
+                    Ponto p2 = PontosClicados[1];
 
-                // Cria as derivadas e a nova curva
-                Ponto dp0 = Curvas[nCurvas-1].getDerivada(1.0, p0, Curvas[nCurvas-1].getPC(1), p0);
-                Ponto dp1 = Curvas[nCurvas].getDerivada(0.0, p0, p1, p2);
-                Curvas[nCurvas] = Bezier(p0, p1 + (dp0 * (1.0/3.0)), p2 - (dp1 * (1.0/3.0)));
-                nCurvas++;
+                    Ponto dp0 = Curvas[nCurvas-1].getDerivada(1.0, p0, Curvas[nCurvas-1].getPC(1), p0);
+                    Ponto dp1 = Curvas[nCurvas].getDerivada(0.0, p0, p1, p2);
+                    Curvas[nCurvas] = Bezier(p0, p1 + (dp0 * (1.0/3.0)), p2 - (dp1 * (1.0/3.0)));
+                    nCurvas++;
+                    ConexaoCurva = false;
+
+                } else {
+                    // Cria uma nova curva a partir do ï¿½ltimo ponto da ï¿½ltima curva e do novo ponto clicado
+                    Ponto p0 = Curvas[nCurvas-1].getPC(2);
+                    Ponto p1 = PontosClicados[0];
+                    Ponto p2 = PontosClicados[1];
+
+                    // Cria as derivadas e a nova curva
+                    Ponto dp0 = Curvas[nCurvas-1].getDerivada(1.0, p0, Curvas[nCurvas-1].getPC(1), p0);
+                    Ponto dp1 = Curvas[nCurvas].getDerivada(0.0, p0, p1, p2);
+                    Curvas[nCurvas] = Bezier(p0, p1 + (dp0 * (1.0/3.0)), p2 - (dp1 * (1.0/3.0)));
+                    nCurvas++;
+                }
             }
             break;
 
@@ -299,18 +325,6 @@ void CriaCurvas()
 
         case MOVIMENTACAO_VERTICES:
 
-            break;
-
-        case CONEXAO_CURVA:
-
-            if (nCurvas == 1) {
-                // Cria a primeira curva a partir dos dois primeiros pontos clicados
-                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
-                nCurvas++;
-            } else {
-                Curvas[nCurvas] = Bezier(PontosClicados[0], PontosClicados[1], PontosClicados[2]);
-                nCurvas++;
-            }
             break;
 
         case ATUALIZACAO_CONTINUIDADE:
@@ -399,7 +413,7 @@ void display( void )
 	// Limpa a tela coma cor de fundo
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    // Define os limites lógicos da área OpenGL dentro da Janela
+    // Define os limites lï¿½gicos da ï¿½rea OpenGL dentro da Janela
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -428,38 +442,40 @@ void display( void )
         }
 
         else if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA)) {
-            switch (nPontoAtual) {
+            if (ModoConexaoCurva)
+            {
+                if (ConexaoCurva)
+                {
+                    switch (nPontoAtual) {
 
-                case 0:
-                    DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
-                    break;
+                        case 0:
+                            DesenhaLinha(PontoConexaoCurva, PosAtualDoMouse);
+                            break;
 
-                case 1:
-                    CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-                    CurvaProj.Traca();
-                    CurvaProj.TracaPoligonoDeControle();
-                    break;
+                        case 1:
+                            CurvaProj = Bezier(PontoConexaoCurva, PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                            defineCor(Red);
+                            CurvaProj.Traca();
+                            defineCor(Red);
+                            CurvaProj.TracaPoligonoDeControle();
+                            break;
+                    }
+                }
+            } else {
+                switch (nPontoAtual) {
+
+                    case 0:
+                        DesenhaLinha(Curvas[nCurvas-1].getPC(2), PosAtualDoMouse);
+                        break;
+
+                    case 1:
+                        CurvaProj = Bezier(Curvas[nCurvas-1].getPC(2), PontosClicados[nPontoAtual-1], PosAtualDoMouse);
+                        CurvaProj.Traca();
+                        CurvaProj.TracaPoligonoDeControle();
+                        break;
+                }
             }
-        }
 
-        else if (modoAtual == CONEXAO_CURVA) {
-            switch (nPontoAtual) {
-
-                case 0:
-                    break;
-
-                case 1:
-                    DesenhaLinha(PontosClicados[0], PosAtualDoMouse);
-                    break;
-
-                case 2:
-                    CurvaProj = Bezier(PontosClicados[nPontoAtual-2], PontosClicados[nPontoAtual-1], PosAtualDoMouse);
-                    defineCor(Red);
-                    CurvaProj.Traca();
-                    defineCor(Red);
-                    CurvaProj.TracaPoligonoDeControle();
-                    break;
-            }
         }
 
         //else if (modoAtual == ATUALIZACAO_CONTINUIDADE) {
@@ -500,8 +516,8 @@ void display( void )
 
 // **********************************************************************
 // ContaTempo(double tempo)
-//      conta um certo nœmero de segundos e informa quanto frames
-// se passaram neste per’odo.
+//      conta um certo nï¿½mero de segundos e informa quanto frames
+// se passaram neste perï¿½odo.
 // **********************************************************************
 void ContaTempo(double tempo)
 {
@@ -573,7 +589,7 @@ void arrow_keys ( int a_keys, int x, int y )
 // Converte as coordenadas do ponto P de coordenadas de tela para
 // coordenadas de universo (sistema de referencias definidas na glOrtho
 // (ver funcao reshape)
-// Este codigo Ž baseado em http://hamala.se/forums/viewtopic.php?t=20
+// Este codigo ï¿½ baseado em http://hamala.se/forums/viewtopic.php?t=20
 // **********************************************************************
 Ponto ConvertePonto(Ponto P)
 {
@@ -602,7 +618,7 @@ void Mouse(int button,int state,int x,int y)
     }
 
     if (modoAtual == MOVIMENTACAO_VERTICES) {
-        // Botão esquerdo do mouse pressionado
+        // Botï¿½o esquerdo do mouse pressionado
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             Ponto P(x,y);
             posInicialMouse = ConvertePonto(P);
@@ -622,12 +638,12 @@ void Mouse(int button,int state,int x,int y)
                 }
             }
         }
-        // Botão esquerdo do mouse liberado
+        // Botï¿½o esquerdo do mouse liberado
         else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
             Ponto P(x,y);
             posFinalMouse = ConvertePonto(P);
 
-            // Atualiza a posição do ponto de controle clicado
+            // Atualiza a posiï¿½ï¿½o do ponto de controle clicado
             for (int i = 0; i < nCurvas; i++) {
                 Bezier& curvaAtual = Curvas[i];
 
@@ -635,17 +651,17 @@ void Mouse(int button,int state,int x,int y)
                 for (int j = 0; j < 3; j++) {
                     if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
                     {
-                        // Atualiza a posição do ponto de controle clicado
+                        // Atualiza a posiï¿½ï¿½o do ponto de controle clicado
                         curvaAtual.setPC(j, posFinalMouse.x, posFinalMouse.y);
 
-                        // Verifica se a curva anterior também precisa ser atualizada
+                        // Verifica se a curva anterior tambï¿½m precisa ser atualizada
                         if (i > 0 && j == 0)
                         {
                             Bezier curvaAnterior = Curvas[i-1];
                             curvaAnterior.setPC(2, posFinalMouse.x, posFinalMouse.y);
                         }
 
-                        // Verifica se a próxima curva também precisa ser atualizada
+                        // Verifica se a prï¿½xima curva tambï¿½m precisa ser atualizada
                         if (i < nCurvas-1 && j == 2)
                         {
                             Bezier proximaCurva = Curvas[i+1];
@@ -657,8 +673,8 @@ void Mouse(int button,int state,int x,int y)
         }
     }
 
-    if (modoAtual == CONEXAO_CURVA) {
-        // Botão esquerdo do mouse pressionado
+    if (ModoConexaoCurva) {
+        // Botï¿½o esquerdo do mouse pressionado
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             Ponto P(x,y);
             posInicialMouse = ConvertePonto(P);
@@ -673,8 +689,8 @@ void Mouse(int button,int state,int x,int y)
                     if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
                     {
                         // Armazena o ponto de controle clicado
-                        PontosClicados[0] = curvaAtual.getPC(j);
-                        nPontoAtual++;
+                        PontoConexaoCurva = curvaAtual.getPC(j);
+                        ConexaoCurva = true;
                     }
                 }
             }
@@ -696,7 +712,11 @@ void Mouse(int button,int state,int x,int y)
     if(button==GLUT_RIGHT_BUTTON)
      return;
 
-    PontosClicados[nPontoAtual++] = ConvertePonto(Ponto(x,y,0));
+    if ((!ModoConexaoCurva) || (ConexaoCurva && (!clicouEmPC(PontoConexaoCurva, ConvertePonto(Ponto(x,y,0))))))
+    {
+        PontosClicados[nPontoAtual++] = ConvertePonto(Ponto(x,y,0));
+    }
+
     if ((modoAtual == SEM_CONTINUIDADE) || (nCurvas == 1))
     {
         if (nPontoAtual==3)
@@ -705,7 +725,8 @@ void Mouse(int button,int state,int x,int y)
             CriaCurvas();
         }
     }
-    else if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA) || (modoAtual == CONEXAO_CURVA))
+
+    else if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA) || (ModoConexaoCurva))
     {
         if (nPontoAtual==2)
         {
@@ -754,14 +775,14 @@ void Motion(int x, int y)
 }
 
 // **********************************************************************
-// função para desenhar o botão na janela
+// funï¿½ï¿½o para desenhar o botï¿½o na janela
 // **********************************************************************
 void DesenhaBotao(int x, int y, int width, int height, string text, bool status) {
 
-    // Define a cor de fundo do botão (preto)
+    // Define a cor de fundo do botï¿½o (preto)
     glColor3f(0.0f, 0.0f, 0.0f);
 
-    // desenha o quadrado em volta do botão
+    // desenha o quadrado em volta do botï¿½o
     glBegin(GL_QUADS);
     glVertex2f(x, y);
     glVertex2f(x + buttonWidth, y);
@@ -769,7 +790,7 @@ void DesenhaBotao(int x, int y, int width, int height, string text, bool status)
     glVertex2f(x, y + buttonHeight);
     glEnd();
 
-    // desenha o texto do botão
+    // desenha o texto do botï¿½o
     if (status) {
         glColor3f(1.0, 1.0, 0);
     } else {
@@ -783,33 +804,33 @@ void DesenhaBotao(int x, int y, int width, int height, string text, bool status)
 }
 
 // **********************************************************************
-// Callbacks da janela de ícones
+// Callbacks da janela de ï¿½cones
 // **********************************************************************
 void display_icons() {
 
     // Limpa o buffer de cores
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Define a cor de fundo para a janela de ícones
+    // Define a cor de fundo para a janela de ï¿½cones
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
-    // Define a matriz de projeção
+    // Define a matriz de projeï¿½ï¿½o
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, 300, 0, 500);
 
-    // Define a matriz de modelo/visão
+    // Define a matriz de modelo/visï¿½o
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    // calcula as coordenadas dos botões
-    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de ícones
-    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de ícones
-    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaçamento entre os botões
-    int button_x = (window_width - buttonWidth) / 2; // posição x do botão central
-    int button_y = button_spacing; // posição y do primeiro botão
+    // calcula as coordenadas dos botï¿½es
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de ï¿½cones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de ï¿½cones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaï¿½amento entre os botï¿½es
+    int button_x = (window_width - buttonWidth) / 2; // posiï¿½ï¿½o x do botï¿½o central
+    int button_y = button_spacing; // posiï¿½ï¿½o y do primeiro botï¿½o
 
-    // desenha os botões
+    // desenha os botï¿½es
     for (int i = 0; i < n_buttons; i++) {
         if (i == intModo) {
             DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
@@ -820,39 +841,43 @@ void display_icons() {
         if ((i == 0) && (ExibicaoDesenho)) {
             DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
         }
-        button_y += buttonHeight + button_spacing; // atualiza a posição y para o próximo botão
+
+        if ((i == 2) && (ModoConexaoCurva)) {
+            DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
+        }
+        button_y += buttonHeight + button_spacing; // atualiza a posiï¿½ï¿½o y para o prï¿½ximo botï¿½o
     }
 
-    // Troca os buffers de vídeo
+    // Troca os buffers de vï¿½deo
     glutSwapBuffers();
 }
 
 void keyboard_icons(unsigned char key, int x, int y)
 {
-    // Código para lidar com eventos de teclado na janela de ícones
+    // CÃ³digo para lidar com eventos de teclado na janela de Ã­cones
     // ...
 }
 
 void arrow_keys_icons(int key, int x, int y)
 {
-    // Código para lidar com eventos de teclas especiais na janela de ícones
+    // CÃ³digo para lidar com eventos de teclas especiais na janela de Ã­cones
     // ...
 }
 
 void motion_icons(int x, int y)
 {
-    // Código para lidar com eventos de movimento do mouse na janela de ícones
+    // CÃ³digo para lidar com eventos de movimento do mouse na janela de Ã­cones
     // ...
 }
 
 // **********************************************************************
-// Função callback do mouse
+// Funï¿½ï¿½o callback do mouse
 // **********************************************************************
 void mouse_icons(int button, int state, int x, int y)
 {
-    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de ícones
-    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de ícones
-    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaçamento entre os botões
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de ï¿½cones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de ï¿½cones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espaï¿½amento entre os botï¿½es
     int button_x = (window_width - buttonWidth) / 2;
     int button1_y = button_spacing;
     int button2_y = button1_y + (buttonHeight + button_spacing);
@@ -863,19 +888,20 @@ void mouse_icons(int button, int state, int x, int y)
     int button7_y = button6_y + (buttonHeight + button_spacing);
     int button8_y = button7_y + (buttonHeight + button_spacing);
 
-    // Verifica se o botão esquerdo do mouse foi pressionado
+    // Verifica se o botï¿½o esquerdo do mouse foi pressionado
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        // Verifica se o clique foi dentro do botão 1
+        // Verifica se o clique foi dentro do botï¿½o 1
         if (x >= button_x && x <= button_x + buttonWidth &&
             y >= button1_y && y <= button1_y + buttonHeight)
         {
+            ModoConexaoCurva = false;
             modoAtual = SEM_CONTINUIDADE;
             intModo = 7;
             printf("Modo sem continuidade selecionado\n");
         }
 
-        // Verifica se o clique foi dentro do botão 2
+        // Verifica se o clique foi dentro do botï¿½o 2
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button2_y && y <= button2_y + buttonHeight)
         {
@@ -884,7 +910,7 @@ void mouse_icons(int button, int state, int x, int y)
             printf("Modo com continuidade de posicao selecionado\n");
         }
 
-        // Verifica se o clique foi dentro do botão 3
+        // Verifica se o clique foi dentro do botï¿½o 3
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button3_y && y <= button3_y + buttonHeight)
         {
@@ -896,6 +922,7 @@ void mouse_icons(int button, int state, int x, int y)
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button4_y && y <= button4_y + buttonHeight)
         {
+            ModoConexaoCurva = false;
             modoAtual = REMOVER_CURVA;
             intModo = 4;
             printf("Edicao remocao de curvas selecionado\n");
@@ -904,6 +931,7 @@ void mouse_icons(int button, int state, int x, int y)
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button5_y && y <= button5_y + buttonHeight)
         {
+            ModoConexaoCurva = false;
             modoAtual = MOVIMENTACAO_VERTICES;
             intModo = 3;
             printf("Edicao movimentacao de vertices selecionado\n");
@@ -912,9 +940,19 @@ void mouse_icons(int button, int state, int x, int y)
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button6_y && y <= button6_y + buttonHeight)
         {
-            modoAtual = CONEXAO_CURVA;
-            intModo = 2;
-            printf("Edicao conexao com uma curva ja existente selecionado\n");
+            if ((modoAtual == CONT_POSICAO) || (modoAtual == CONT_DERIVADA))
+            {
+                if (ModoConexaoCurva)
+                {
+                    ModoConexaoCurva = false;
+                    printf("Edicao conexao com uma curva ja existente desativado\n");
+                } else {
+                    ModoConexaoCurva = true;
+                    printf("Edicao conexao com uma curva ja existente ativado\n");
+                }
+            } else {
+                printf("Edicao conexao com uma curva ja existente requer o modo CONTINUIDADE POSICAO ou CONTINUIDADE DERIVADA\n");
+            }
         }
 
         else if (x >= button_x && x <= button_x + buttonWidth &&
@@ -956,38 +994,38 @@ int main ( int argc, char** argv )
     glutInitWindowSize  ( 650, 500);
 
     // Cria a janela na tela, definindo o nome da
-    // que aparecera na barra de título da janela.
+    // que aparecera na barra de tï¿½tulo da janela.
     glutCreateWindow    ( "Animacao com Bezier" );
 
     // Define que o tratador de evento para
     // o redesenho da tela. A funcao "display"
-    // será chamada automaticamente quando
-    // for necessário redesenhar a janela
+    // serï¿½ chamada automaticamente quando
+    // for necessï¿½rio redesenhar a janela
     glutDisplayFunc ( display );
 
     // Define que o tratador de evento para
-    // o invalida‹o da tela. A funcao "display"
-    // será chamada automaticamente sempre que a
-    // m‡quina estiver ociosa (idle)
+    // o invalidaï¿½ï¿½o da tela. A funcao "display"
+    // serï¿½ chamada automaticamente sempre que a
+    // mï¿½quina estiver ociosa (idle)
     glutIdleFunc(animate);
 
     // Define que o tratador de evento para
     // o redimensionamento da janela. A funcao "reshape"
-    // será chamada automaticamente quando
-    // o usuário alterar o tamanho da janela
+    // serï¿½ chamada automaticamente quando
+    // o usuï¿½rio alterar o tamanho da janela
     glutReshapeFunc ( reshape );
 
     // Define que o tratador de evento para
     // as teclas. A funcao "keyboard"
-    // será chamada automaticamente sempre
-    // o usuário pressionar uma tecla comum
+    // serï¿½ chamada automaticamente sempre
+    // o usuï¿½rio pressionar uma tecla comum
     glutKeyboardFunc ( keyboard );
 
     // Define que o tratador de evento para
     // as teclas especiais(F1, F2,... ALT-A,
     // ALT-B, Teclas de Seta, ...).
-    // A funcao "arrow_keys" será chamada
-    // automaticamente sempre o usuário
+    // A funcao "arrow_keys" serï¿½ chamada
+    // automaticamente sempre o usuï¿½rio
     // pressionar uma tecla especial
     glutSpecialFunc ( arrow_keys );
     glutMouseFunc(Mouse);
@@ -999,14 +1037,14 @@ int main ( int argc, char** argv )
     glutInitWindowSize(300, 500);
     glutCreateWindow("Icones");
 
-    // Registra as funções de callback para a janela de ícones
+    // Registra as funï¿½ï¿½es de callback para a janela de ï¿½cones
     glutDisplayFunc(display_icons);
     glutKeyboardFunc(keyboard_icons);
     glutSpecialFunc(arrow_keys_icons);
     glutMouseFunc(mouse_icons);
     glutMotionFunc(motion_icons);
 
-    // executa algumas inicializações
+    // executa algumas inicializaï¿½ï¿½es
     init();
 
     // inicia o tratamento dos eventos
