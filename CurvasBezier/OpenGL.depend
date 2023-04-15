@@ -697,11 +697,11 @@
 1680008773 c:\users\cassi\onedrive\arquivos\pucrs\6_semestre\computacao_grafica\t1\curvasbezier\ponto.cpp
 	"Ponto.h"
 
-1681400211 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.cpp
+1681489881 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.cpp
 	"Bezier.h"
 	"ListaDeCoresRGB.h"
 
-1681400236 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.h
+1681489879 c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\bezier.h
 	<iostream>
 	<windows.h>
 	<GL/glut.h>
@@ -752,7 +752,7 @@
 	<windows.h>
 	<sys/time.h>
 
-1681471692 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\desenhabezier.cpp
+1681483647 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\desenhabezier.cpp
 	<iostream>
 	<cmath>
 	<ctime>

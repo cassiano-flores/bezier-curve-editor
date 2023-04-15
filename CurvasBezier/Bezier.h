@@ -28,17 +28,18 @@ using namespace std;
 
 #include "Ponto.h"
 
+enum ModoCurva {NORMAL, POSICAO, DERIVADA};
+
 class Bezier
 {
     Ponto Coords[3];
-    //int Indices[3];
 
 public:
     float ComprimentoTotalDaCurva;
     int cor;
 
     Bezier();
-    Bezier(Ponto P0, Ponto P1, Ponto P2);
+    Bezier(Ponto P0, Ponto P1, Ponto P2, ModoCurva modo);
     Bezier(Ponto V[]);
     Ponto Calcula(double t);
     Ponto getPC(int i);
@@ -48,6 +49,9 @@ public:
     void calculaComprimentoDaCurva();
     Ponto getDerivada(double t, Ponto p0, Ponto p1, Ponto p2);
     void setPC(int i, double x, double y);
+    ModoCurva modo;
+    ModoCurva getModo();
+    void setModo();
 };
 
 bool clicouEmPC(Ponto pontoClicado, Ponto pontoCurva);

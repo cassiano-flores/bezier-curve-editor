@@ -40,11 +40,12 @@ void Bezier::calculaComprimentoDaCurva()
 
 }
 // **********************************************************************
-Bezier::Bezier(Ponto P0, Ponto P1, Ponto P2)
+Bezier::Bezier(Ponto P0, Ponto P1, Ponto P2, ModoCurva modo)
 {
     Coords[0] = P0;
     Coords[1] = P1;
     Coords[2] = P2;
+    this->modo = modo;
     calculaComprimentoDaCurva();
     cor = rand() % 100;
 }
@@ -142,4 +143,25 @@ void Bezier::setPC(int i, double x, double y)
 {
     Coords[i].x = x;
     Coords[i].y = y;
+}
+// **********************************************************************
+//
+// **********************************************************************
+ModoCurva Bezier::getModo()
+{
+    return modo;
+}
+// **********************************************************************
+//
+// **********************************************************************
+void Bezier::setModo()
+{
+    if (modo == POSICAO)
+    {
+        modo = DERIVADA;
+    }
+    else if (modo == DERIVADA)
+    {
+        modo = POSICAO;
+    }
 }
