@@ -1,6 +1,6 @@
 // **********************************************************************
-// PUCRS/Escola Polit�cnica
-// COMPUTA��O GR�FICA
+// PUCRS/Escola Politecnica
+// COMPUTACAO GRAFICA
 //
 // Programa basico para criar aplicacoes 2D em OpenGL
 //
@@ -76,7 +76,7 @@ enum Modo {ATUALIZACAO_CONTINUIDADE, MOVIMENTACAO_VERTICES,
             REMOVER_CURVA, CONT_DERIVADA, CONT_POSICAO, SEM_CONTINUIDADE};
 Modo modoAtual = SEM_CONTINUIDADE;
 
-// Vari�veis para armazenar as dimens�es dos bot�es
+// Variaveis para armazenar as dimensoes dos botoes
 int buttonWidth = 250;
 int buttonHeight = 50;
 
@@ -249,7 +249,7 @@ void CriaCurvas()
                     ConexaoCurva = false;
 
                 } else {
-                    // Cria uma nova curva a partir do �ltimo ponto da �ltima curva e do novo ponto clicado
+                    // Cria uma nova curva a partir do ultimo ponto da ultima curva e do novo ponto clicado
                     Ponto p0 = Curvas[nCurvas-1].getPC(2);
                     Curvas[nCurvas] = Bezier(p0, PontosClicados[0], PontosClicados[1], POSICAO);
                     nCurvas++;
@@ -276,7 +276,7 @@ void CriaCurvas()
                     ConexaoCurva = false;
 
                 } else {
-                    // Cria uma nova curva a partir do �ltimo ponto da �ltima curva e do novo ponto clicado
+                    // Cria uma nova curva a partir do ultimo ponto da ultima curva e do novo ponto clicado
                     Ponto p0 = Curvas[nCurvas-1].getPC(2);
                     Ponto p1 = PontosClicados[0];
                     Ponto p2 = PontosClicados[1];
@@ -406,7 +406,7 @@ void display( void )
     // Limpa a tela coma cor de fundo
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Define os limites l�gicos da �rea OpenGL dentro da Janela
+    // Define os limites logicos da area OpenGL dentro da Janela
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -502,8 +502,8 @@ void display( void )
 
 // **********************************************************************
 // ContaTempo(double tempo)
-//      conta um certo n�mero de segundos e informa quanto frames
-// se passaram neste per�odo.
+// conta um certo numero de segundos e informa quanto frames
+// se passaram neste periodo.
 // **********************************************************************
 void ContaTempo(double tempo)
 {
@@ -574,7 +574,7 @@ void arrow_keys ( int a_keys, int x, int y )
 // Converte as coordenadas do ponto P de coordenadas de tela para
 // coordenadas de universo (sistema de referencias definidas na glOrtho
 // (ver funcao reshape)
-// Este codigo � baseado em http://hamala.se/forums/viewtopic.php?t=20
+// Este codigo eh baseado em http://hamala.se/forums/viewtopic.php?t=20
 // **********************************************************************
 Ponto ConvertePonto(Ponto P)
 {
@@ -603,7 +603,7 @@ void Mouse(int button,int state,int x,int y)
     }
 
     if (modoAtual == MOVIMENTACAO_VERTICES) {
-        // Bot�o esquerdo do mouse pressionado
+        // Botao esquerdo do mouse pressionado
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             Ponto P(x,y);
             posInicialMouse = ConvertePonto(P);
@@ -623,12 +623,12 @@ void Mouse(int button,int state,int x,int y)
                 }
             }
         }
-        // Bot�o esquerdo do mouse liberado
+        // Botao esquerdo do mouse liberado
         else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
             Ponto P(x,y);
             posFinalMouse = ConvertePonto(P);
 
-            // Atualiza a posi��o do ponto de controle clicado
+            // Atualiza a posicao do ponto de controle clicado
             for (int i = 0; i < nCurvas; i++) {
                 Bezier& curvaAtual = Curvas[i];
 
@@ -636,10 +636,10 @@ void Mouse(int button,int state,int x,int y)
                 for (int j = 0; j < 3; j++) {
                     if (clicouEmPC(posInicialMouse, curvaAtual.getPC(j)))
                     {
-                        // Atualiza a posi��o do ponto de controle clicado
+                        // Atualiza a posicao do ponto de controle clicado
                         curvaAtual.setPC(j, posFinalMouse.x, posFinalMouse.y);
 
-                        // Verifica se a curva anterior tamb�m precisa ser atualizada
+                        // Verifica se a curva anterior tambem precisa ser atualizada
                         if (i > 0 && j == 0)
                         {
                             Bezier& curvaAnterior = Curvas[i-1];
@@ -650,7 +650,7 @@ void Mouse(int button,int state,int x,int y)
                             }
                         }
 
-                        // Verifica se a pr�xima curva tamb�m precisa ser atualizada
+                        // Verifica se a proxima curva tambem precisa ser atualizada
                         if (i < nCurvas-1 && j == 2)
                         {
                             Bezier& proximaCurva = Curvas[i+1];
@@ -667,7 +667,7 @@ void Mouse(int button,int state,int x,int y)
     }
 
     if (ModoConexaoCurva) {
-        // Bot�o esquerdo do mouse pressionado
+        // Botao esquerdo do mouse pressionado
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             Ponto P(x,y);
             posInicialMouse = ConvertePonto(P);
@@ -832,14 +832,14 @@ void Motion(int x, int y)
 }
 
 // **********************************************************************
-// fun��o para desenhar o bot�o na janela
+// funcao para desenhar o botao na janela
 // **********************************************************************
 void DesenhaBotao(int x, int y, int width, int height, string text, bool status) {
 
-    // Define a cor de fundo do bot�o (preto)
+    // Define a cor de fundo do botao (preto)
     glColor3f(0.0f, 0.0f, 0.0f);
 
-    // desenha o quadrado em volta do bot�o
+    // desenha o quadrado em volta do botao
     glBegin(GL_QUADS);
     glVertex2f(x, y);
     glVertex2f(x + buttonWidth, y);
@@ -847,7 +847,7 @@ void DesenhaBotao(int x, int y, int width, int height, string text, bool status)
     glVertex2f(x, y + buttonHeight);
     glEnd();
 
-    // desenha o texto do bot�o
+    // desenha o texto do botao
     if (status) {
         glColor3f(1.0, 1.0, 0);
     } else {
@@ -861,33 +861,33 @@ void DesenhaBotao(int x, int y, int width, int height, string text, bool status)
 }
 
 // **********************************************************************
-// Callbacks da janela de �cones
+// Callbacks da janela de icones
 // **********************************************************************
 void display_icons() {
 
     // Limpa o buffer de cores
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Define a cor de fundo para a janela de �cones
+    // Define a cor de fundo para a janela de icones
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
-    // Define a matriz de proje��o
+    // Define a matriz de projecao
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, 300, 0, 500);
 
-    // Define a matriz de modelo/vis�o
+    // Define a matriz de modelo/visao
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    // calcula as coordenadas dos bot�es
-    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de �cones
-    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de �cones
-    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espa�amento entre os bot�es
-    int button_x = (window_width - buttonWidth) / 2; // posi��o x do bot�o central
-    int button_y = button_spacing; // posi��o y do primeiro bot�o
+    // calcula as coordenadas dos botoes
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de icones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de icones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espacamento entre os botoes
+    int button_x = (window_width - buttonWidth) / 2; // posicao x do botao central
+    int button_y = button_spacing; // posicao y do primeiro botao
 
-    // desenha os bot�es
+    // desenha os botoes
     for (int i = 0; i < n_buttons; i++) {
         if (i == intModo) {
             DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
@@ -902,39 +902,33 @@ void display_icons() {
         if ((i == 2) && (ModoConexaoCurva)) {
             DesenhaBotao(button_x, button_y, buttonWidth, buttonHeight, buttonTexts[i], true);
         }
-        button_y += buttonHeight + button_spacing; // atualiza a posi��o y para o pr�ximo bot�o
+        button_y += buttonHeight + button_spacing; // atualiza a posicao y para o proximo botao
     }
 
-    // Troca os buffers de v�deo
+    // Troca os buffers de video
     glutSwapBuffers();
 }
 
 void keyboard_icons(unsigned char key, int x, int y)
 {
-    // Código para lidar com eventos de teclado na janela de ícones
-    // ...
 }
 
 void arrow_keys_icons(int key, int x, int y)
 {
-    // Código para lidar com eventos de teclas especiais na janela de ícones
-    // ...
 }
 
 void motion_icons(int x, int y)
 {
-    // Código para lidar com eventos de movimento do mouse na janela de ícones
-    // ...
 }
 
 // **********************************************************************
-// Fun��o callback do mouse
+// Funcao callback do mouse
 // **********************************************************************
 void mouse_icons(int button, int state, int x, int y)
 {
-    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de �cones
-    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de �cones
-    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espa�amento entre os bot�es
+    int window_width = glutGet(GLUT_WINDOW_WIDTH); // largura da janela de icones
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT); // altura da janela de icones
+    int button_spacing = (window_height - n_buttons * buttonHeight) / (n_buttons + 1); // espacamento entre os botoes
     int button_x = (window_width - buttonWidth) / 2;
     int button1_y = button_spacing;
     int button2_y = button1_y + (buttonHeight + button_spacing);
@@ -945,10 +939,10 @@ void mouse_icons(int button, int state, int x, int y)
     int button7_y = button6_y + (buttonHeight + button_spacing);
     int button8_y = button7_y + (buttonHeight + button_spacing);
 
-    // Verifica se o bot�o esquerdo do mouse foi pressionado
+    // Verifica se o botao esquerdo do mouse foi pressionado
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        // Verifica se o clique foi dentro do bot�o 1
+        // Verifica se o clique foi dentro do botao 1
         if (x >= button_x && x <= button_x + buttonWidth &&
             y >= button1_y && y <= button1_y + buttonHeight)
         {
@@ -958,7 +952,7 @@ void mouse_icons(int button, int state, int x, int y)
             printf("Modo sem continuidade selecionado\n");
         }
 
-        // Verifica se o clique foi dentro do bot�o 2
+        // Verifica se o clique foi dentro do botao 2
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button2_y && y <= button2_y + buttonHeight)
         {
@@ -967,7 +961,7 @@ void mouse_icons(int button, int state, int x, int y)
             printf("Modo com continuidade de posicao selecionado\n");
         }
 
-        // Verifica se o clique foi dentro do bot�o 3
+        // Verifica se o clique foi dentro do botao 3
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button3_y && y <= button3_y + buttonHeight)
         {
@@ -976,6 +970,7 @@ void mouse_icons(int button, int state, int x, int y)
             printf("Modo com continuidade de derivada selecionado\n");
         }
 
+        // Verifica se o clique foi dentro do botao 4
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button4_y && y <= button4_y + buttonHeight)
         {
@@ -985,6 +980,7 @@ void mouse_icons(int button, int state, int x, int y)
             printf("Edicao remocao de curvas selecionado\n");
         }
 
+        // Verifica se o clique foi dentro do botao 5
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button5_y && y <= button5_y + buttonHeight)
         {
@@ -994,6 +990,7 @@ void mouse_icons(int button, int state, int x, int y)
             printf("Edicao movimentacao de vertices selecionado\n");
         }
 
+        // Verifica se o clique foi dentro do botao 6
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button6_y && y <= button6_y + buttonHeight)
         {
@@ -1012,6 +1009,7 @@ void mouse_icons(int button, int state, int x, int y)
             }
         }
 
+        // Verifica se o clique foi dentro do botao 7
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button7_y && y <= button7_y + buttonHeight)
         {
@@ -1021,6 +1019,7 @@ void mouse_icons(int button, int state, int x, int y)
             printf("Edicao atualizacao do modo de continuidade entre duas curvas selecionado\n");
         }
 
+        // Verifica se o clique foi dentro do botao 8
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button8_y && y <= button8_y + buttonHeight)
         {
@@ -1038,7 +1037,6 @@ void mouse_icons(int button, int state, int x, int y)
 
 // **********************************************************************
 //  void main ( int argc, char** argv )
-//
 // **********************************************************************
 int main ( int argc, char** argv )
 {
@@ -1052,38 +1050,38 @@ int main ( int argc, char** argv )
     glutInitWindowSize  ( 650, 500);
 
     // Cria a janela na tela, definindo o nome da
-    // que aparecera na barra de t�tulo da janela.
+    // que aparecera na barra de titulo da janela.
     glutCreateWindow    ( "Animacao com Bezier" );
 
     // Define que o tratador de evento para
     // o redesenho da tela. A funcao "display"
-    // ser� chamada automaticamente quando
-    // for necess�rio redesenhar a janela
+    // sera chamada automaticamente quando
+    // for necessario redesenhar a janela
     glutDisplayFunc ( display );
 
     // Define que o tratador de evento para
-    // o invalida��o da tela. A funcao "display"
-    // ser� chamada automaticamente sempre que a
-    // m�quina estiver ociosa (idle)
+    // o invalidacao da tela. A funcao "display"
+    // sera chamada automaticamente sempre que a
+    // maquina estiver ociosa (idle)
     glutIdleFunc(animate);
 
     // Define que o tratador de evento para
     // o redimensionamento da janela. A funcao "reshape"
-    // ser� chamada automaticamente quando
-    // o usu�rio alterar o tamanho da janela
+    // sera chamada automaticamente quando
+    // o usuario alterar o tamanho da janela
     glutReshapeFunc ( reshape );
 
     // Define que o tratador de evento para
     // as teclas. A funcao "keyboard"
-    // ser� chamada automaticamente sempre
-    // o usu�rio pressionar uma tecla comum
+    // sera chamada automaticamente sempre
+    // o usuario pressionar uma tecla comum
     glutKeyboardFunc ( keyboard );
 
     // Define que o tratador de evento para
     // as teclas especiais(F1, F2,... ALT-A,
     // ALT-B, Teclas de Seta, ...).
-    // A funcao "arrow_keys" ser� chamada
-    // automaticamente sempre o usu�rio
+    // A funcao "arrow_keys" sera chamada
+    // automaticamente sempre o usuario
     // pressionar uma tecla especial
     glutSpecialFunc ( arrow_keys );
     glutMouseFunc(Mouse);
@@ -1095,14 +1093,14 @@ int main ( int argc, char** argv )
     glutInitWindowSize(300, 500);
     glutCreateWindow("Icones");
 
-    // Registra as fun��es de callback para a janela de �cones
+    // Registra as funcoes de callback para a janela de icones
     glutDisplayFunc(display_icons);
     glutKeyboardFunc(keyboard_icons);
     glutSpecialFunc(arrow_keys_icons);
     glutMouseFunc(mouse_icons);
     glutMotionFunc(motion_icons);
 
-    // executa algumas inicializa��es
+    // executa algumas inicializacoes
     init();
 
     // inicia o tratamento dos eventos
