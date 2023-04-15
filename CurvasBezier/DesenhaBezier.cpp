@@ -643,14 +643,22 @@ void Mouse(int button,int state,int x,int y)
                         if (i > 0 && j == 0)
                         {
                             Bezier& curvaAnterior = Curvas[i-1];
-                            curvaAnterior.setPC(2, posFinalMouse.x, posFinalMouse.y);
+                            if ((curvaAnterior.getPC(0) == posInicialMouse) || (curvaAnterior.getPC(1) == posInicialMouse) ||
+                                 (curvaAnterior.getPC(2) == posInicialMouse))
+                            {
+                                curvaAnterior.setPC(2, posFinalMouse.x, posFinalMouse.y);
+                            }
                         }
 
                         // Verifica se a pr�xima curva tamb�m precisa ser atualizada
                         if (i < nCurvas-1 && j == 2)
                         {
                             Bezier& proximaCurva = Curvas[i+1];
-                            proximaCurva.setPC(0, posFinalMouse.x, posFinalMouse.y);
+                            if ((proximaCurva.getPC(0) == posInicialMouse) || (proximaCurva.getPC(1) == posInicialMouse) ||
+                                 (proximaCurva.getPC(2) == posInicialMouse))
+                            {
+                                proximaCurva.setPC(0, posFinalMouse.x, posFinalMouse.y);
+                            }
                         }
                     }
                 }
@@ -692,64 +700,55 @@ void Mouse(int button,int state,int x,int y)
             posInicialMouse = ConvertePonto(P);
 
             // Percorre todas as curvas existentes para verificar se o ponto clicado pertence a alguma delas
-            for (int i = 0; i < nCurvas; i++) {
+            bool sair = false;
+            for (int i = 0; i < nCurvas && !sair; i++) {
                 Bezier* curvaAtual = &Curvas[i];
 
                 // Percorre todos os pontos de controle da curva para verificar qual foi clicado
-                for (int j = 0; j < 3; j++) {
+                for (int j = 0; j < 3 && !sair; j++) {
                     if (clicouEmPC(posInicialMouse, curvaAtual->getPC(j))) {
                         // Armazena a curva que contém o ponto clicado
                         CurvasAtualizacao.push_back(curvaAtual);
                         count++;
+
+                        if (count == 2) {
+                            // Altera o modo de continuidade de todas as curvas em "CurvasAtualizacao"
+                            Bezier* primeiraCurva = CurvasAtualizacao[0];
+                            Bezier* segundaCurva = CurvasAtualizacao[1];
+                            Ponto p0 = primeiraCurva->getPC(2);
+                            Ponto p1 = primeiraCurva->getPC(1);
+                            Ponto p2 = primeiraCurva->getPC(0);
+
+                            int indexPC = -1;
+                            if (p1 == posInicialMouse) {
+                                indexPC = 1;
+                            } else if (p2 == posInicialMouse) {
+                                indexPC = 0;
+                            }
+
+                            if ((primeiraCurva->getModo() == POSICAO) || (segundaCurva->getModo() == POSICAO))  {
+                                // Ajusta os pontos de controle existentes para serem condizentes com o modo "DERIVADA"
+                                Ponto dp1 = primeiraCurva->getDerivada(1.0, p0, p1, p2);
+                                Ponto dp2 = segundaCurva->getDerivada(0.0, p0, p1, p2);
+                                p1 = p1 - (dp1 * (1.0 / 3.0));
+                                primeiraCurva->setPC(indexPC, p1.x, p1.y);
+                                p2 = p2 + (dp2 * (1.0 / 3.0));
+                                primeiraCurva->setPC(indexPC == 0 ? 1 : 0, p2.x, p2.y);
+
+                            } else if ((primeiraCurva->getModo() == DERIVADA) || (segundaCurva->getModo() == DERIVADA)) {
+                                // Ajusta os pontos de controle existentes para serem condizentes com o modo "POSICAO"
+                                p1 = ((p1 - p0) * (1.0/3.0)) + p0;
+                                primeiraCurva->setPC(indexPC, p1.x, p1.y);
+                                p2 = ((p2 - p0) * (1.0/3.0)) + p0;
+                                primeiraCurva->setPC(indexPC == 0 ? 1 : 0, p2.x, p2.y);
+                            }
+
+                            primeiraCurva->setModo();
+                            segundaCurva->setModo();
+                            sair = true;
+                            break;
+                        }
                     }
-                }
-            }
-            //TORNAR CurvasAtualizacao[2] E PASSAR O IF PARA CIMA, SE COUNT=2 ENTAO FAZ TUDO ISSO E BREAK
-            if (count >= 2) {
-                // Altera o modo de continuidade de todas as curvas em "CurvasAtualizacao"
-                for (int i = 0; i < count; i++) {
-                    Bezier* atualCurva = CurvasAtualizacao[i];
-                    Bezier* maisUmaCurva = CurvasAtualizacao[i + 1];
-                    Ponto p0;
-                    Ponto p1;
-                    Ponto p2;
-
-                    if (atualCurva->getModo() == POSICAO) {
-                        // atualCurva->modo = DERIVADA;
-
-                        // Ajusta os pontos de controle já existentes para serem condizentes com o modo "DERIVADA"
-                        p0 = atualCurva->getPC(2);
-                        p1 = atualCurva->getPC(1);
-                        p2 = atualCurva->getPC(0);
-
-                        // calcula as novas posições dos pontos de controle 1 e 2
-                        Ponto dp1 = atualCurva->getDerivada(1.0, p0, p1, p2);
-                        Ponto dp2 = maisUmaCurva->getDerivada(0.0, p0, p2, PontosClicados[1]);
-                        p1 = p1 - (dp1 * (1.0 / 3.0));
-                        p2 = p2 + (dp2 * (1.0 / 3.0));
-
-                        // atualiza os pontos de controle
-                        atualCurva->setPC(1, p1.x, p1.y);
-                        atualCurva->setPC(0, p2.x, p2.y);
-                    }
-
-                    else if (atualCurva->getModo() == DERIVADA) {
-                        // atualCurva->modo = POSICAO;
-
-                        //Ajusta os pontos de controle já existentes para serem condizentes com o modo "POSICAO"
-                        p0 = atualCurva->getPC(2);
-                        p1 = atualCurva->getPC(1);
-                        p2 = atualCurva->getPC(0);
-
-                        //calcula as novas posições dos pontos de controle 1 e 2
-                        p1 = ((p1 - p0) * (1.0/3.0)) + p0;
-                        p2 = ((p2 - p0) * (1.0/3.0)) + p0;
-
-                        //atualiza os pontos de controle
-                        atualCurva->setPC(1, p1.x, p1.y);
-                        atualCurva->setPC(0, p2.x, p2.y);
-                }
-                atualCurva->setModo();
                 }
             }
         }
@@ -1016,6 +1015,7 @@ void mouse_icons(int button, int state, int x, int y)
         else if (x >= button_x && x <= button_x + buttonWidth &&
                  y >= button7_y && y <= button7_y + buttonHeight)
         {
+            ModoConexaoCurva = false;
             modoAtual = ATUALIZACAO_CONTINUIDADE;
             intModo = 1;
             printf("Edicao atualizacao do modo de continuidade entre duas curvas selecionado\n");

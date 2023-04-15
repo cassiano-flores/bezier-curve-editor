@@ -752,7 +752,7 @@
 	<windows.h>
 	<sys/time.h>
 
-1681483647 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\desenhabezier.cpp
+1681567020 source:c:\users\cassi\downloads\editor-curvas-bezier\curvasbezier\desenhabezier.cpp
 	<iostream>
 	<cmath>
 	<ctime>
